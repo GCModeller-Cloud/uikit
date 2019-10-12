@@ -20,7 +20,7 @@
 
             this.editorActiontd = td;
             this.tr.appendChild(td);
-            this.divs = td.getElementsByTagName("div");
+            this.divs = <any>td.getElementsByTagName("div");
 
             // 进行按钮的事件绑定
             this.getElementById("confirm").onclick = function () { vm.confirmNew() };
