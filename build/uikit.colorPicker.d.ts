@@ -12,11 +12,11 @@ declare namespace uikit.color_picker {
         colorhex: string;
         color: string;
         colorObj: TypeScript.ColorManager.w3color;
-        constructor(changeColor: Delegate.Sub);
+        hh: number;
+        constructor(changeColor: useColor);
         mouseOverColor(hex: string): void;
         mouseOutMap(): void;
-        hh: number;
-        clickColor(hex: number | string, seltop: number, selleft: number, html5?: number): void;
+        clickColor(hex: number | string, seltop: number, selleft: number): void;
         wrongInput(): void;
         clearWrongInput(): void;
         changeRed(value: any): void;
@@ -26,9 +26,16 @@ declare namespace uikit.color_picker {
     }
 }
 declare namespace uikit.color_picker {
+    interface useColor {
+        (color: TypeScript.ColorManager.w3color): void;
+    }
     class colorPicker {
         mapPicker: colorMapEvent;
-        private submitOnEnter;
+        div: HTMLDivElement;
+        constructor(pickDiv: string, using: useColor);
+        private createUI;
+        private createBrightnessTable;
+        private createMapPicker;
     }
 }
 declare namespace uikit.color_picker.view {
@@ -37,7 +44,7 @@ declare namespace uikit.color_picker.view {
         color: string;
         offsets: number[];
     }
-    function createPolyMap(evt: colorMapEvent, containerId: string): void;
+    function createPolyMap(evt: colorMapEvent, container: string | IHTMLElement): void;
     const colorMapBase64: string;
     const poly: IpolyMap[];
 }

@@ -185,21 +185,15 @@ var uikit;
                 document.getElementById("divpreview").style.backgroundColor = this.colorObj.toHexString();
                 document.body.style.cursor = "";
             };
-            colorMapEvent.prototype.clickColor = function (hex, seltop, selleft, html5) {
-                if (html5 === void 0) { html5 = null; }
+            colorMapEvent.prototype.clickColor = function (hex, seltop, selleft) {
                 var c;
                 var cObj;
                 var colormap, areas, i, areacolor, cc;
-                if (html5 && html5 == 5) {
-                    c = document.getElementById("html5colorpicker").value;
+                if (hex == 0) {
+                    c = document.getElementById("entercolor").value;
                 }
                 else {
-                    if (hex == 0) {
-                        c = document.getElementById("entercolor").value;
-                    }
-                    else {
-                        c = hex;
-                    }
+                    c = hex;
                 }
                 cObj = new TypeScript.ColorManager.w3color(c);
                 this.colorhex = cObj.toHexString();
@@ -240,7 +234,6 @@ var uikit;
                     document.getElementById("selectedhexagon").style.visibility = "hidden";
                 }
                 document.getElementById("selectedcolor").style.backgroundColor = cObj.toHexString();
-                document.getElementById("html5colorpicker").value = cObj.toHexString();
                 document.getElementById('slideRed').value = r;
                 document.getElementById('slideGreen').value = g;
                 document.getElementById('slideBlue').value = b;
@@ -288,13 +281,35 @@ var uikit;
     var color_picker;
     (function (color_picker) {
         var colorPicker = /** @class */ (function () {
-            function colorPicker() {
+            function colorPicker(pickDiv, using) {
+                this.div = $ts(pickDiv).any;
+                this.mapPicker = new color_picker.colorMapEvent(using);
+                this.createUI();
             }
-            colorPicker.prototype.submitOnEnter = function (e) {
-                var keyboardKey = e.which || e.keyCode;
-                if (keyboardKey == 13) {
-                    this.mapPicker.clickColor(0, -1, -1);
-                }
+            colorPicker.prototype.createUI = function () {
+                this.createMapPicker();
+                this.createBrightnessTable();
+            };
+            colorPicker.prototype.createBrightnessTable = function () {
+                var div = $ts("<div>", { id: "lumtopcontainer" });
+                div.append($ts("<h3>").display("Lighter / Darker:"));
+                this.div.append(div);
+            };
+            colorPicker.prototype.createMapPicker = function () {
+                var div = $ts("<div>", { style: "text-align:center;" });
+                var mapDiv = $ts("<div>");
+                div.append($ts("<h3>").display("Pick a Color:"));
+                div.append(mapDiv);
+                color_picker.view.createPolyMap(this.mapPicker, mapDiv);
+                mapDiv.append($ts("<div>", {
+                    id: "selectedhexagon",
+                    style: "visibility: visible; position: relative; width: 21px; height: 21px; background-image: url('img_selectedcolor.gif'); top: -35px; left: 135px;"
+                }));
+                mapDiv.append($ts("<div>", {
+                    id: "divpreview",
+                    style: "visibility: hidden; background-color: rgb(255, 0, 0);"
+                }).display("&nbsp;"));
+                this.div.append(div);
             };
             return colorPicker;
         }());
@@ -308,7 +323,7 @@ var uikit;
     (function (color_picker) {
         var view;
         (function (view) {
-            function createPolyMap(evt, containerId) {
+            function createPolyMap(evt, container) {
                 var map = $ts("<map>", { id: "colormap", name: "colormap" });
                 var img = $ts("<img>", {
                     style: "margin-right:2px;",
@@ -336,9 +351,12 @@ var uikit;
                     }
                 }); })
                     .ForEach(function (a) { return map.append(a); });
-                $ts(containerId).display(img).append(map);
-                $ts(containerId).style.margin = "auto";
-                $ts(containerId).style.width = "236px";
+                if (typeof container == "string") {
+                    container = $ts(container);
+                }
+                container.display(img).append(map);
+                container.style.margin = "auto";
+                container.style.width = "236px";
             }
             view.createPolyMap = createPolyMap;
             view.colorMapBase64 = "";

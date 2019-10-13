@@ -5,8 +5,9 @@ namespace uikit.color_picker {
         public colorhex = "#FF0000";
         public color = "#FF0000";
         public colorObj = new TypeScript.ColorManager.w3color(this.color);
+        public hh = 0;
 
-        public constructor(private changeColor: Delegate.Sub) {
+        public constructor(private changeColor: useColor) {
 
         }
 
@@ -25,36 +26,38 @@ namespace uikit.color_picker {
             document.getElementById("divpreview").style.backgroundColor = this.colorObj.toHexString();
             document.body.style.cursor = "";
         }
-        public hh = 0;
-
-        clickColor(hex: number | string, seltop: number, selleft: number, html5: number = null) {
+       
+        clickColor(hex: number | string, seltop: number, selleft: number) {
             var c;
             var cObj: TypeScript.ColorManager.w3color;
             var colormap, areas, i, areacolor, cc;
-            if (html5 && html5 == 5) {
-                c = document.getElementById("html5colorpicker").value;
+
+            if (hex == 0) {
+                c = document.getElementById("entercolor").value;
             } else {
-                if (hex == 0) {
-                    c = document.getElementById("entercolor").value;
-                } else {
-                    c = hex;
-                }
+                c = hex;
             }
+
             cObj = new TypeScript.ColorManager.w3color(c);
+
             this.colorhex = cObj.toHexString();
+
             if (cObj.valid) {
                 this.clearWrongInput();
             } else {
                 this.wrongInput();
                 return;
             }
+
             let r = cObj.red;
             let g = cObj.green;
             let b = cObj.blue;
+
             document.getElementById("colornamDIV").innerHTML = (cObj.toName() || "");
             document.getElementById("colorhexDIV").innerHTML = cObj.toHexString();
             document.getElementById("colorrgbDIV").innerHTML = cObj.toRgbString();
             document.getElementById("colorhslDIV").innerHTML = cObj.toHslString();
+
             if ((!seltop || seltop == -1) && (!selleft || selleft == -1)) {
                 colormap = document.getElementById("colormap");
                 areas = colormap.getElementsByTagName("AREA");
@@ -77,7 +80,6 @@ namespace uikit.color_picker {
                 document.getElementById("selectedhexagon").style.visibility = "hidden";
             }
             document.getElementById("selectedcolor").style.backgroundColor = cObj.toHexString();
-            document.getElementById("html5colorpicker").value = cObj.toHexString();
             document.getElementById('slideRed').value = r;
             document.getElementById('slideGreen').value = g;
             document.getElementById('slideBlue').value = b;

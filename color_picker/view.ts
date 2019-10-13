@@ -8,7 +8,7 @@ namespace uikit.color_picker.view {
         offsets: number[];
     }
 
-    export function createPolyMap(evt: colorMapEvent, containerId: string) {
+    export function createPolyMap(evt: colorMapEvent, container: string | IHTMLElement) {
         let map = $ts("<map>", { id: "colormap", name: "colormap" });
         let img = $ts("<img>", {
             style: "margin-right:2px;",
@@ -39,9 +39,13 @@ namespace uikit.color_picker.view {
             }))
             .ForEach(a => map.append(a));
 
-        $ts(containerId).display(img).append(map);
-        $ts(containerId).style.margin = "auto";
-        $ts(containerId).style.width = "236px";
+        if (typeof container == "string") {
+            container = $ts(container);
+        }
+
+        container.display(img).append(map);
+        container.style.margin = "auto";
+        container.style.width = "236px";
     }
 
     export const colorMapBase64: string = "";
