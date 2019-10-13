@@ -10,7 +10,7 @@ namespace uikit.color_picker {
 
         }
 
-        mouseOverColor(hex) {
+        mouseOverColor(hex: string) {
             document.getElementById("divpreview").style.visibility = "visible";
             document.getElementById("divpreview").style.backgroundColor = hex;
             document.body.style.cursor = "pointer";
@@ -27,7 +27,7 @@ namespace uikit.color_picker {
         }
         public hh = 0;
 
-        clickColor(hex: number, seltop: number, selleft: number, html5: number = null) {
+        clickColor(hex: number | string, seltop: number, selleft: number, html5: number = null) {
             var c;
             var cObj: TypeScript.ColorManager.w3color;
             var colormap, areas, i, areacolor, cc;
