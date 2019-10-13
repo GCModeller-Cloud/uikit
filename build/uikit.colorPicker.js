@@ -28,8 +28,8 @@ var uikit;
                 for (i = 0; i < arr.length; i++) {
                     if (match == 0 && Math.round(l * 100) == Math.round(arr[i].lightness * 100)) {
                         tr = $ts("<tr>");
-                        tr.append($ts("<td>", { style: "text-align:right;" }).display("<b>" + Math.round(l * 100) + "%&nbsp;</b>"));
-                        tr.append($ts("<td>", { style: "background-color:" + new w3color(hslObj).toHexString() + ";\"" }).display("<br><br>"));
+                        tr.append($ts("<td>", { style: { "text-align": "right" } }).display("<b>" + Math.round(l * 100) + "%&nbsp;</b>"));
+                        tr.append($ts("<td>", { style: { "background-color": new w3color(hslObj).toHexString() } }).display("<br><br>"));
                         tr.append($ts("<td>").display("&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b>"));
                         table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
                         table.append(tr);
@@ -39,8 +39,8 @@ var uikit;
                     else {
                         if (match == 0 && l > arr[i].lightness) {
                             tr = $ts("<tr>");
-                            tr.append($ts("<td>", { style: "text-align:right;" }).display("<b>" + Math.round(l * 100) + "%&nbsp;</b>"));
-                            tr.append($ts("<td>", { style: "background-color:" + new w3color(hslObj).toHexString() + ";\"" }));
+                            tr.append($ts("<td>", { style: { "text-align": "right" } }).display("<b>" + Math.round(l * 100) + "%&nbsp;</b>"));
+                            tr.append($ts("<td>", { style: { "background-color": new w3color(hslObj).toHexString() } }));
                             tr.append($ts("<td>").display("&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b>"));
                             table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
                             table.append(tr);
@@ -48,14 +48,26 @@ var uikit;
                             match = 1;
                         }
                         tr = $ts("<tr>");
-                        tr.append($ts("<td>", { style: "width:40px;text-align:right;" }).display(Math.round(arr[i].lightness * 100) + "%&nbsp;"));
                         tr.append($ts("<td>", {
-                            style: "cursor:pointer;background-color:" + arr[i].toHexString(),
+                            style: {
+                                width: "40px",
+                                "text-align": "right"
+                            }
+                        }).display(Math.round(arr[i].lightness * 100) + "%&nbsp;"));
+                        tr.append($ts("<td>", {
+                            style: {
+                                cursor: "pointer",
+                                "background-color": arr[i].toHexString()
+                            },
                             onclick: function () {
                                 evt.clickColor(arr[i].toHexString());
                             }
                         }));
-                        tr.append($ts("<td>", { style: "width:80px;" }).display("&nbsp;" + arr[i].toHexString()));
+                        tr.append($ts("<td>", {
+                            style: {
+                                width: "80px"
+                            }
+                        }).display("&nbsp;" + arr[i].toHexString()));
                         table.append(tr);
                     }
                 }
