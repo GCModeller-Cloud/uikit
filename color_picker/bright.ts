@@ -1,19 +1,19 @@
 namespace uikit.color_picker.view {
 
-    export function brightAdjustment(baseColor: string) {
+    const w3color = TypeScript.ColorManager.w3color;
 
-    }
-
-    function hslLum_top() {
+    /**
+     * 生成亮度调整选择的表格
+    */
+    export function hslLum_top(color: string): string {
         var i, a, match;
-        var color = document.getElementById("colorhexDIV").innerHTML;
-        var hslObj = w3color(color);
+        var hslObj = new w3color(color);
         var h = hslObj.hue;
         var s = hslObj.sat;
         var l = hslObj.lightness;
         var arr = [];
         for (i = 0; i <= 20; i++) {
-            arr.push(w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")"));
+            arr.push(new w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")"));
         }
         arr.reverse();
         a = "<h3 class='w3-center'>Lighter / Darker:</h3><table class='colorTable' style='width:100%;'>";
@@ -23,8 +23,8 @@ namespace uikit.color_picker.view {
                 a += "<tr><td></td><td></td><td></td></tr>";
                 a += "<tr>";
                 a += "<td style='text-align:right;'><b>" + Math.round(l * 100) + "%&nbsp;</b></td>";
-                a += "<td style='background-color:" + w3color(hslObj).toHexString() + "'><br><br></td>";
-                a += "<td>&nbsp;<b>" + w3color(hslObj).toHexString() + "</b></td>";
+                a += "<td style='background-color:" + new w3color(hslObj).toHexString() + "'><br><br></td>";
+                a += "<td>&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b></td>";
                 a += "</tr>";
                 a += "<tr><td></td><td></td><td></td></tr>";
                 match = 1;
@@ -33,8 +33,8 @@ namespace uikit.color_picker.view {
                     a += "<tr><td></td><td></td><td></td></tr>";
                     a += "<tr>";
                     a += "<td style='text-align:right;'><b>" + Math.round(l * 100) + "%&nbsp;</b></td>";
-                    a += "<td style='background-color:" + w3color(hslObj).toHexString() + "'></td>";
-                    a += "<td>&nbsp;<b>" + w3color(hslObj).toHexString() + "</b></td>";
+                    a += "<td style='background-color:" + new w3color(hslObj).toHexString() + "'></td>";
+                    a += "<td>&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b></td>";
                     a += "</tr>";
                     a += "<tr><td></td><td></td><td></td></tr>";
                     match = 1;
@@ -47,13 +47,13 @@ namespace uikit.color_picker.view {
             }
         }
         a += "</table>";
-        document.getElementById("lumtopcontainer").innerHTML = a;
+
+        return a;
     }
 
-    function hslTable(x) {
+    export function hslTable(color: string, x: "hue" | "sat" | "light") {
         var lineno, header, i, a, match, same, comp, loopHSL, HSL;
-        var color = document.getElementById("colorhexDIV").innerHTML;
-        var hslObj = w3color(color);
+        var hslObj = new w3color(color);
         var h = hslObj.hue;
         var s = hslObj.sat;
         var l = hslObj.lightness;
@@ -62,9 +62,9 @@ namespace uikit.color_picker.view {
         if (x == "sat") { header = "Saturation"; lineno = 20; }
         if (x == "light") { header = "Lightness"; lineno = 20; }
         for (i = 0; i <= lineno; i++) {
-            if (x == "hue") { arr.push(w3color("hsl(" + (i * 15) + "," + s + "," + l + ")")); }
-            if (x == "sat") { arr.push(w3color("hsl(" + h + "," + (i * 0.05) + "," + l + ")")); }
-            if (x == "light") { arr.push(w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")")); }
+            if (x == "hue") { arr.push(new w3color("hsl(" + (i * 15) + "," + s + "," + l + ")")); }
+            if (x == "sat") { arr.push(new w3color("hsl(" + h + "," + (i * 0.05) + "," + l + ")")); }
+            if (x == "light") { arr.push(new w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")")); }
         }
         if (x == "sat" || x == "light") { arr.reverse(); }
         a = "<h3>" + header + "</h3>";
@@ -81,13 +81,13 @@ namespace uikit.color_picker.view {
         for (i = 0; i < arr.length; i++) {
             same = 0;
             if (x == "hue") {
-                loopHSL = w3color(arr[i]).hue;
+                loopHSL = new w3color(arr[i]).hue;
                 HSL = h;
                 if (i == arr.length - 1) { loopHSL = 360; }
                 comp = (loopHSL > HSL);
             }
             if (x == "sat") {
-                loopHSL = Math.round(w3color(arr[i]).sat * 100);
+                loopHSL = Math.round(new w3color(arr[i]).sat * 100);
                 HSL = Number(s * 100);
                 HSL = Math.round(HSL);
                 comp = (loopHSL < HSL);
@@ -95,7 +95,7 @@ namespace uikit.color_picker.view {
                 loopHSL = loopHSL + "%";
             }
             if (x == "light") {
-                loopHSL = Math.round(w3color(arr[i]).lightness * 100);
+                loopHSL = Math.round(new w3color(arr[i]).lightness * 100);
                 HSL = Number(l * 100);
                 HSL = Math.round(HSL);
                 comp = (loopHSL < HSL);
@@ -128,9 +128,7 @@ namespace uikit.color_picker.view {
             }
         }
         a += "</table></div>";
-        if (x == "hue") { document.getElementById("huecontainer").innerHTML = a; }
-        if (x == "sat") { document.getElementById("hslsatcontainer").innerHTML = a; }
-        if (x == "light") { document.getElementById("hsllumcontainer").innerHTML = a; }
 
+        return a;
     }
 }
