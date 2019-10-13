@@ -26,7 +26,7 @@ namespace uikit.color_picker {
             $ts("#divpreview").style.backgroundColor = this.colorObj.toHexString();
         }
 
-        clickColor(hex: number | string, seltop: number, selleft: number) {
+        clickColor(hex: number | string, seltop?: number, selleft?: number) {
             var c;
 
             if (hex == 0) {

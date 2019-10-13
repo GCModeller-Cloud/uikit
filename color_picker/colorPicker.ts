@@ -8,9 +8,11 @@ namespace uikit.color_picker {
         public div: HTMLDivElement;
 
         public constructor(pickDiv: string, using: useColor) {
+            let vm = this;
+
             this.div = $ts(pickDiv).any;
             this.mapPicker = new colorMapEvent(function (color) {
-                $ts("#brightness").display(view.hslLum_top(color.toHexString()));
+                $ts("#brightness").display(view.hslLum_top(color.toHexString(), vm.mapPicker));
                 using(color);
             });
             this.createUI();
@@ -28,7 +30,7 @@ namespace uikit.color_picker {
             div.append($ts("<div>", { id: "colorhexDIV" }));
             div.append($ts("<div>", { id: "colorrgbDIV" }));
             div.append($ts("<div>", { id: "colorhslDIV" }));
-            
+
             div.append($ts("<div>", { id: "brightness" }));
 
             this.div.append(div);

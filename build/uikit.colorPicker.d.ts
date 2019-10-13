@@ -3,7 +3,7 @@ declare namespace uikit.color_picker.view {
     /**
      * 生成亮度调整选择的表格
     */
-    function hslLum_top(color: string): string;
+    function hslLum_top(color: string, evt: colorMapEvent): HTMLElement;
     function hslTable(color: string, x: "hue" | "sat" | "light"): any;
 }
 declare namespace uikit.color_picker {
@@ -16,7 +16,7 @@ declare namespace uikit.color_picker {
         constructor(changeColor: useColor);
         mouseOverColor(hex: string): void;
         mouseOutMap(): void;
-        clickColor(hex: number | string, seltop: number, selleft: number): void;
+        clickColor(hex: number | string, seltop?: number, selleft?: number): void;
     }
 }
 declare namespace uikit.color_picker {
