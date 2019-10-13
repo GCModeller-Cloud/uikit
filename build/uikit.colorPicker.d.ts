@@ -17,12 +17,6 @@ declare namespace uikit.color_picker {
         mouseOverColor(hex: string): void;
         mouseOutMap(): void;
         clickColor(hex: number | string, seltop: number, selleft: number): void;
-        wrongInput(): void;
-        clearWrongInput(): void;
-        changeRed(value: any): void;
-        changeGreen(value: any): void;
-        changeBlue(value: any): void;
-        changeAll(): void;
     }
 }
 declare namespace uikit.color_picker {

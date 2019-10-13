@@ -171,50 +171,41 @@ var uikit;
                 this.hh = 0;
             }
             colorMapEvent.prototype.mouseOverColor = function (hex) {
-                document.getElementById("divpreview").style.visibility = "visible";
-                document.getElementById("divpreview").style.backgroundColor = hex;
-                document.body.style.cursor = "pointer";
+                $ts("#divpreview").show();
+                $ts("#divpreview").style.backgroundColor = hex;
             };
             colorMapEvent.prototype.mouseOutMap = function () {
                 if (this.hh == 0) {
-                    document.getElementById("divpreview").style.visibility = "hidden";
+                    $ts("#divpreview").hide();
                 }
                 else {
                     this.hh = 0;
                 }
-                document.getElementById("divpreview").style.backgroundColor = this.colorObj.toHexString();
-                document.body.style.cursor = "";
+                $ts("#divpreview").style.backgroundColor = this.colorObj.toHexString();
             };
             colorMapEvent.prototype.clickColor = function (hex, seltop, selleft) {
                 var c;
-                var cObj;
-                var colormap, areas, i, areacolor, cc;
                 if (hex == 0) {
-                    c = document.getElementById("entercolor").value;
                 }
                 else {
                     c = hex;
                 }
-                cObj = new TypeScript.ColorManager.w3color(c);
+                var cObj = new TypeScript.ColorManager.w3color(c);
                 this.colorhex = cObj.toHexString();
-                if (cObj.valid) {
-                    this.clearWrongInput();
-                }
-                else {
-                    this.wrongInput();
-                    return;
-                }
+                this.colorObj = cObj;
                 var r = cObj.red;
                 var g = cObj.green;
                 var b = cObj.blue;
-                document.getElementById("colornamDIV").innerHTML = (cObj.toName() || "");
-                document.getElementById("colorhexDIV").innerHTML = cObj.toHexString();
-                document.getElementById("colorrgbDIV").innerHTML = cObj.toRgbString();
-                document.getElementById("colorhslDIV").innerHTML = cObj.toHslString();
+                $ts("#colornamDIV").display(cObj.toName() || "");
+                $ts("#colorhexDIV").display(cObj.toHexString());
+                $ts("#colorrgbDIV").display(cObj.toRgbString());
+                $ts("#colorhslDIV").display(cObj.toHslString());
                 if ((!seltop || seltop == -1) && (!selleft || selleft == -1)) {
-                    colormap = document.getElementById("colormap");
-                    areas = colormap.getElementsByTagName("AREA");
-                    for (i = 0; i < areas.length; i++) {
+                    var colormap = $ts("#colormap");
+                    var areas = colormap.getElementsByTagName("AREA");
+                    var areacolor = void 0;
+                    var cc = void 0;
+                    for (var i = 0; i < areas.length; i++) {
                         areacolor = areas[i].getAttribute("onmouseover").replace('mouseOverColor("', '');
                         areacolor = areacolor.replace('")', '');
                         if (areacolor.toLowerCase() == this.colorhex) {
@@ -225,51 +216,15 @@ var uikit;
                     }
                 }
                 if ((seltop + 200) > -1 && selleft > -1) {
-                    document.getElementById("selectedhexagon").style.top = seltop + "px";
-                    document.getElementById("selectedhexagon").style.left = selleft + "px";
-                    document.getElementById("selectedhexagon").style.visibility = "visible";
+                    $ts("#selectedhexagon").style.top = seltop + "px";
+                    $ts("#selectedhexagon").style.left = selleft + "px";
+                    $ts("#selectedhexagon").style.visibility = "visible";
                 }
                 else {
-                    document.getElementById("divpreview").style.backgroundColor = cObj.toHexString();
-                    document.getElementById("selectedhexagon").style.visibility = "hidden";
+                    $ts("#divpreview").style.backgroundColor = cObj.toHexString();
+                    $ts("#selectedhexagon").style.visibility = "hidden";
                 }
-                document.getElementById("selectedcolor").style.backgroundColor = cObj.toHexString();
-                document.getElementById('slideRed').value = r;
-                document.getElementById('slideGreen').value = g;
-                document.getElementById('slideBlue').value = b;
-                this.changeRed(r);
-                this.changeGreen(g);
-                this.changeBlue(b);
                 this.changeColor(this.colorObj);
-                document.getElementById("fixed").style.backgroundColor = cObj.toHexString();
-            };
-            colorMapEvent.prototype.wrongInput = function () {
-                document.getElementById("entercolorDIV").className = "has-error";
-                document.getElementById("wronginputDIV").style.display = "block";
-            };
-            colorMapEvent.prototype.clearWrongInput = function () {
-                document.getElementById("entercolorDIV").className = "";
-                document.getElementById("wronginputDIV").style.display = "none";
-            };
-            colorMapEvent.prototype.changeRed = function (value) {
-                document.getElementById('valRed').innerHTML = value;
-                this.changeAll();
-            };
-            colorMapEvent.prototype.changeGreen = function (value) {
-                document.getElementById('valGreen').innerHTML = value;
-                this.changeAll();
-            };
-            colorMapEvent.prototype.changeBlue = function (value) {
-                document.getElementById('valBlue').innerHTML = value;
-                this.changeAll();
-            };
-            colorMapEvent.prototype.changeAll = function () {
-                var r = document.getElementById('valRed').innerHTML;
-                var g = document.getElementById('valGreen').innerHTML;
-                var b = document.getElementById('valBlue').innerHTML;
-                document.getElementById('change').style.backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
-                document.getElementById('changetxt').innerHTML = "rgb(" + r + ", " + g + ", " + b + ")";
-                document.getElementById('changetxthex').innerHTML = new TypeScript.ColorManager.w3color("rgb(" + r + "," + g + "," + b + ")").toHexString();
             };
             return colorMapEvent;
         }());
@@ -283,7 +238,10 @@ var uikit;
         var colorPicker = /** @class */ (function () {
             function colorPicker(pickDiv, using) {
                 this.div = $ts(pickDiv).any;
-                this.mapPicker = new color_picker.colorMapEvent(using);
+                this.mapPicker = new color_picker.colorMapEvent(function (color) {
+                    $ts("#brightness").display(color_picker.view.hslLum_top(color.toHexString()));
+                    using(color);
+                });
                 this.createUI();
             }
             colorPicker.prototype.createUI = function () {
@@ -292,7 +250,11 @@ var uikit;
             };
             colorPicker.prototype.createBrightnessTable = function () {
                 var div = $ts("<div>", { id: "lumtopcontainer" });
-                div.append($ts("<h3>").display("Lighter / Darker:"));
+                div.append($ts("<div>", { id: "colornamDIV" }));
+                div.append($ts("<div>", { id: "colorhexDIV" }));
+                div.append($ts("<div>", { id: "colorrgbDIV" }));
+                div.append($ts("<div>", { id: "colorhslDIV" }));
+                div.append($ts("<div>", { id: "brightness" }));
                 this.div.append(div);
             };
             colorPicker.prototype.createMapPicker = function () {
