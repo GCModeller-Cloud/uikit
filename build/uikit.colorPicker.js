@@ -9,71 +9,72 @@ var uikit;
              * 生成亮度调整选择的表格
             */
             function hslLum_top(color, evt) {
-                var i, match;
                 var hslObj = new w3color(color);
                 var h = hslObj.hue;
                 var s = hslObj.sat;
-                var l = hslObj.lightness;
-                var arr = [];
+                var lightness = Math.round(hslObj.lightness * 100);
+                var levels = [];
                 var div = $ts("<div>");
-                for (i = 0; i <= 20; i++) {
-                    arr.push(new w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")"));
+                for (var i = 0; i <= 20; i++) {
+                    levels.push(new w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")"));
                 }
-                match = 0;
-                arr.reverse();
+                levels.reverse();
                 var table = $ts("<table>", { class: "colorTable", style: "width:100%;" });
-                var tr;
+                var match = false;
+                var clickColor = function (color) {
+                    evt.clickColor(color);
+                };
                 div.append($ts("<h3>").display("Lighter / Darker:"));
                 div.append(table);
-                for (i = 0; i < arr.length; i++) {
-                    if (match == 0 && Math.round(l * 100) == Math.round(arr[i].lightness * 100)) {
+                for (var _i = 0, levels_1 = levels; _i < levels_1.length; _i++) {
+                    var brightnessColor = levels_1[_i];
+                    match = rowBuilder(table, brightnessColor, match, hslObj, lightness, clickColor);
+                }
+                return div;
+            }
+            view.hslLum_top = hslLum_top;
+            function rowBuilder(table, color, match, hslObj, lightness, clickColor) {
+                var tr;
+                if ((!match) && lightness == Math.round(color.lightness * 100)) {
+                    tr = $ts("<tr>");
+                    tr.append($ts("<td>", { style: "text-align: right;" }).display("<b>" + lightness + "%&nbsp;</b>"));
+                    tr.append($ts("<td>", { style: "background-color: " + new w3color(hslObj).toHexString() + ";" }).display("<br><br>"));
+                    tr.append($ts("<td>").display("&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b>"));
+                    table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
+                    table.append(tr);
+                    table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
+                    match = true;
+                }
+                else {
+                    if ((!match) && (lightness > color.lightness)) {
                         tr = $ts("<tr>");
-                        tr.append($ts("<td>", { style: { "text-align": "right" } }).display("<b>" + Math.round(l * 100) + "%&nbsp;</b>"));
-                        tr.append($ts("<td>", { style: { "background-color": new w3color(hslObj).toHexString() } }).display("<br><br>"));
+                        tr.append($ts("<td>", { style: "text-align: right;" }).display("<b>" + lightness + "%&nbsp;</b>"));
+                        tr.append($ts("<td>", { style: "background-color: " + new w3color(hslObj).toHexString() + ";" }));
                         tr.append($ts("<td>").display("&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b>"));
                         table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
                         table.append(tr);
                         table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
-                        match = 1;
+                        match = true;
                     }
-                    else {
-                        if (match == 0 && l > arr[i].lightness) {
-                            tr = $ts("<tr>");
-                            tr.append($ts("<td>", { style: { "text-align": "right" } }).display("<b>" + Math.round(l * 100) + "%&nbsp;</b>"));
-                            tr.append($ts("<td>", { style: { "background-color": new w3color(hslObj).toHexString() } }));
-                            tr.append($ts("<td>").display("&nbsp;<b>" + new w3color(hslObj).toHexString() + "</b>"));
-                            table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
-                            table.append(tr);
-                            table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
-                            match = 1;
+                    tr = $ts("<tr>");
+                    tr.append($ts("<td>", {
+                        style: "width: 40px; text-align: right;"
+                    }).display(Math.round(color.lightness * 100) + "%&nbsp;"));
+                    tr.append($ts("<td>", {
+                        style: "cursor: pointer;background-color: " + color.toHexString(),
+                        onclick: function () {
+                            clickColor(color.toHexString());
                         }
-                        tr = $ts("<tr>");
-                        tr.append($ts("<td>", {
-                            style: {
-                                width: "40px",
-                                "text-align": "right"
-                            }
-                        }).display(Math.round(arr[i].lightness * 100) + "%&nbsp;"));
-                        tr.append($ts("<td>", {
-                            style: {
-                                cursor: "pointer",
-                                "background-color": arr[i].toHexString()
-                            },
-                            onclick: function () {
-                                evt.clickColor(arr[i].toHexString());
-                            }
-                        }));
-                        tr.append($ts("<td>", {
-                            style: {
-                                width: "80px"
-                            }
-                        }).display("&nbsp;" + arr[i].toHexString()));
-                        table.append(tr);
-                    }
+                    }));
+                    tr.append($ts("<td>", {
+                        style: {
+                            width: "80px"
+                        }
+                    }).display("&nbsp;" + color.toHexString()));
+                    table.append(tr);
                 }
-                return table;
+                return match;
             }
-            view.hslLum_top = hslLum_top;
             function hslTable(color, x) {
                 var lineno, header, i, a, match, same, comp, loopHSL, HSL;
                 var hslObj = new w3color(color);
@@ -226,12 +227,14 @@ var uikit;
                     var areacolor = void 0;
                     var cc = void 0;
                     for (var i = 0; i < areas.length; i++) {
-                        areacolor = areas[i].getAttribute("onmouseover").replace('mouseOverColor("', '');
-                        areacolor = areacolor.replace('")', '');
+                        areacolor = areas[i].getAttribute("data-target");
+                        cc = areacolor.split("|");
+                        areacolor = cc[0];
                         if (areacolor.toLowerCase() == this.colorhex) {
-                            cc = areas[i].getAttribute("onclick").replace(')', '').split(",");
-                            seltop = Number(cc[1]);
-                            selleft = Number(cc[2]);
+                            cc = cc[1].split(",");
+                            seltop = Number(cc[0]);
+                            selleft = Number(cc[1]);
+                            break;
                         }
                     }
                 }
@@ -331,7 +334,8 @@ var uikit;
                     },
                     onmouseover: function () {
                         evt.mouseOverColor(pdata.color);
-                    }
+                    },
+                    "data-target": pdata.color + "|" + pdata.offsets.join(",")
                 }); })
                     .ForEach(function (a) { return map.append(a); });
                 if (typeof container == "string") {

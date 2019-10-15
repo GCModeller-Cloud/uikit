@@ -6,84 +6,96 @@ namespace uikit.color_picker.view {
      * 生成亮度调整选择的表格
     */
     export function hslLum_top(color: string, evt: colorMapEvent): HTMLElement {
-        var i, match;
         var hslObj = new w3color(color);
         var h = hslObj.hue;
         var s = hslObj.sat;
-        var l = hslObj.lightness;
-        var arr = [];
+        var lightness = Math.round(hslObj.lightness * 100);
+        var levels: TypeScript.ColorManager.w3color[] = [];
 
         let div = $ts("<div>");
 
-        for (i = 0; i <= 20; i++) {
-            arr.push(new w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")"));
+        for (let i = 0; i <= 20; i++) {
+            levels.push(new w3color("hsl(" + h + "," + s + "," + (i * 0.05) + ")"));
         }
 
-        match = 0;
-        arr.reverse();
+        levels.reverse();
 
         let table = $ts("<table>", { class: "colorTable", style: "width:100%;" });
-        let tr: IHTMLElement;
+        let match: boolean = false;
+        let clickColor: clickColor = function (color: string) {
+            evt.clickColor(color);
+        }
 
         div.append($ts("<h3>").display("Lighter / Darker:"));
         div.append(table);
 
-        for (i = 0; i < arr.length; i++) {
-            if (match == 0 && Math.round(l * 100) == Math.round(arr[i].lightness * 100)) {
+        for (let brightnessColor of levels) {
+            match = rowBuilder(table, brightnessColor, match, hslObj, lightness, clickColor);
+        }
+
+        return div;
+    }
+
+    interface clickColor { (color: string): void; }
+
+    function rowBuilder(
+        table: IHTMLElement,
+        color: TypeScript.ColorManager.w3color,
+        match: boolean,
+        hslObj: TypeScript.ColorManager.w3color,
+        lightness: number,
+        clickColor: clickColor): boolean {
+
+        let tr: IHTMLElement;
+
+        if ((!match) && lightness == Math.round(color.lightness * 100)) {
+            tr = $ts("<tr>");
+
+            tr.append($ts("<td>", { style: "text-align: right;" }).display(`<b>${lightness}%&nbsp;</b>`));
+            tr.append($ts("<td>", { style: `background-color: ${new w3color(hslObj).toHexString()};` }).display(`<br><br>`))
+            tr.append($ts("<td>").display(`&nbsp;<b>${new w3color(hslObj).toHexString()}</b>`));
+
+            table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
+            table.append(tr);
+            table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
+
+            match = true;
+        } else {
+            if ((!match) && (lightness > color.lightness)) {
                 tr = $ts("<tr>");
 
-                tr.append($ts("<td>", { style: <any>{ "text-align": "right" } }).display(`<b>${Math.round(l * 100)}%&nbsp;</b>`));
-                tr.append($ts("<td>", { style: <any>{ "background-color": new w3color(hslObj).toHexString() } }).display(`<br><br>`))
+                tr.append($ts("<td>", { style: "text-align: right;" }).display(`<b>${lightness}%&nbsp;</b>`));
+                tr.append($ts("<td>", { style: `background-color: ${new w3color(hslObj).toHexString()};` }));
                 tr.append($ts("<td>").display(`&nbsp;<b>${new w3color(hslObj).toHexString()}</b>`));
 
                 table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
                 table.append(tr);
                 table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
 
-                match = 1;
-            } else {
-                if (match == 0 && l > arr[i].lightness) {
-                    tr = $ts("<tr>");
-
-                    tr.append($ts("<td>", { style: <any>{ "text-align": "right" } }).display(`<b>${Math.round(l * 100)}%&nbsp;</b>`));
-                    tr.append($ts("<td>", { style: <any>{ "background-color": new w3color(hslObj).toHexString() } }));
-                    tr.append($ts("<td>").display(`&nbsp;<b>${new w3color(hslObj).toHexString()}</b>`));
-
-                    table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
-                    table.append(tr);
-                    table.append($ts("<tr>").display("<td></td><td></td><td></td>"));
-
-                    match = 1;
-                }
-
-                tr = $ts("<tr>");
-
-                tr.append($ts("<td>", {
-                    style: <any>{
-                        width: "40px",
-                        "text-align": "right"
-                    }
-                }).display(`${Math.round(arr[i].lightness * 100)}%&nbsp;`));
-                tr.append($ts("<td>", {
-                    style: <any>{
-                        cursor: "pointer",
-                        "background-color": arr[i].toHexString()
-                    },
-                    onclick: function () {
-                        evt.clickColor(arr[i].toHexString());
-                    }
-                }))
-                tr.append($ts("<td>", {
-                    style: <any>{
-                        width: "80px"
-                    }
-                }).display(`&nbsp;${arr[i].toHexString()}`));
-
-                table.append(tr);
+                match = true;
             }
+
+            tr = $ts("<tr>");
+
+            tr.append($ts("<td>", {
+                style: `width: 40px; text-align: right;`
+            }).display(`${Math.round(color.lightness * 100)}%&nbsp;`));
+            tr.append($ts("<td>", {
+                style: `cursor: pointer;background-color: ${color.toHexString()}`,
+                onclick: function () {
+                    clickColor(color.toHexString());
+                }
+            }))
+            tr.append($ts("<td>", {
+                style: <any>{
+                    width: "80px"
+                }
+            }).display(`&nbsp;${color.toHexString()}`));
+
+            table.append(tr);
         }
 
-        return table;
+        return match;
     }
 
     export function hslTable(color: string, x: "hue" | "sat" | "light") {

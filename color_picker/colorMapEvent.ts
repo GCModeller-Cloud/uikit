@@ -56,12 +56,16 @@ namespace uikit.color_picker {
                 let cc: string[];
 
                 for (let i = 0; i < areas.length; i++) {
-                    areacolor = areas[i].getAttribute("onmouseover").replace('mouseOverColor("', '');
-                    areacolor = areacolor.replace('")', '');
+                    areacolor = areas[i].getAttribute("data-target");
+                    cc = areacolor.split("|");
+                    areacolor = cc[0];
+
                     if (areacolor.toLowerCase() == this.colorhex) {
-                        cc = areas[i].getAttribute("onclick").replace(')', '').split(",");
-                        seltop = Number(cc[1]);
-                        selleft = Number(cc[2]);
+                        cc = cc[1].split(",");
+                        seltop = Number(cc[0]);
+                        selleft = Number(cc[1]);
+
+                        break;
                     }
                 }
             }

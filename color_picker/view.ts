@@ -35,7 +35,8 @@ namespace uikit.color_picker.view {
                 },
                 onmouseover: function () {
                     evt.mouseOverColor(pdata.color);
-                }
+                },
+                "data-target": `${pdata.color}|${pdata.offsets.join(",")}`
             }))
             .ForEach(a => map.append(a));
 
