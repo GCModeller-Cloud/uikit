@@ -26,6 +26,7 @@ declare namespace uikit.color_picker {
     class colorPicker {
         mapPicker: colorMapEvent;
         div: HTMLDivElement;
+        selectedColor: TypeScript.ColorManager.w3color;
         constructor(pickDiv: string, using: useColor);
         private createUI;
         private createBrightnessTable;

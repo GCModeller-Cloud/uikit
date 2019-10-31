@@ -218,7 +218,7 @@ var uikit;
                 var g = cObj.green;
                 var b = cObj.blue;
                 $ts("#colornamDIV").display(cObj.toName() || "");
-                $ts("#colorhexDIV").display(cObj.toHexString());
+                $ts("#colorhexDIV").css("background-color: " + cObj.toHexString() + ";", false).display(cObj.toHexString());
                 $ts("#colorrgbDIV").display(cObj.toRgbString());
                 $ts("#colorhslDIV").display(cObj.toHslString());
                 if ((!seltop || seltop == -1) && (!selleft || selleft == -1)) {
@@ -265,6 +265,7 @@ var uikit;
                 this.mapPicker = new color_picker.colorMapEvent(function (color) {
                     $ts("#brightness").display(color_picker.view.hslLum_top(color.toHexString(), vm.mapPicker));
                     using(color);
+                    vm.selectedColor = color;
                 });
                 this.createUI();
             }

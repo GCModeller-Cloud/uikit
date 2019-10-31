@@ -6,6 +6,7 @@ namespace uikit.color_picker {
 
         public mapPicker: colorMapEvent;
         public div: HTMLDivElement;
+        public selectedColor: TypeScript.ColorManager.w3color;
 
         public constructor(pickDiv: string, using: useColor) {
             let vm = this;
@@ -14,6 +15,7 @@ namespace uikit.color_picker {
             this.mapPicker = new colorMapEvent(function (color) {
                 $ts("#brightness").display(view.hslLum_top(color.toHexString(), vm.mapPicker));
                 using(color);
+                vm.selectedColor = color;
             });
             this.createUI();
         }

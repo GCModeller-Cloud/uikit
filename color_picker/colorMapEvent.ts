@@ -45,7 +45,7 @@ namespace uikit.color_picker {
             let b = cObj.blue;
 
             $ts("#colornamDIV").display(cObj.toName() || "");
-            $ts("#colorhexDIV").display(cObj.toHexString());
+            $ts("#colorhexDIV").css(`background-color: ${cObj.toHexString()};`, false).display(cObj.toHexString());
             $ts("#colorrgbDIV").display(cObj.toRgbString());
             $ts("#colorhslDIV").display(cObj.toHslString());
 
