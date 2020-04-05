@@ -178,7 +178,7 @@ var uikit;
                 this.showRowNumber = showRowNumber;
                 var thead = $ts("<thead>");
                 var tbody = $ts("<tbody>");
-                var table = $ts("<table>").append(thead).append(tbody);
+                var table = $ts("<table>").appendElement(thead).appendElement(tbody);
                 $ts(id).appendChild(table);
                 if (style) {
                     table.setAttribute("style", style);
