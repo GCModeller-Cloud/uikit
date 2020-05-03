@@ -1,4 +1,4 @@
-namespace uikit.color_picker {
+﻿namespace uikit.color_picker {
 
     export interface useColor { (color: TypeScript.ColorManager.w3color): void; }
 
@@ -26,14 +26,24 @@ namespace uikit.color_picker {
         }
 
         private createBrightnessTable() {
+            // lumtopcontainer是调整亮度的表格容器
             let div = $ts("<div>", { id: "lumtopcontainer" });
 
             div.append($ts("<div>", { id: "colornamDIV" }));
             div.append($ts("<div>", { id: "colorhexDIV" }));
             div.append($ts("<div>", { id: "colorrgbDIV" }));
             div.append($ts("<div>", { id: "colorhslDIV" }));
+            div.append($ts("<button>", {
+                id: "colorBtn",
+                onclick: function () {
+                    div.hide();
+                }
+
+            }).display("关闭"))
 
             div.append($ts("<div>", { id: "brightness" }));
+
+            
 
             this.div.append(div);
         }
