@@ -1,13 +1,13 @@
 /// <reference path="../../build/linq.d.ts" />
 declare namespace uikit.table_editor {
-    function fromData<T extends {}>(data: T[], divId: string): tableEditor;
+    function fromData<T extends {}>(data: T[], divId: string, filters?: string[], opts?: editorConfig): tableEditor;
 }
 declare namespace uikit.table_editor {
     /**
      * 对表格之中的单行数据的编辑操作的对象
     */
     class editor {
-        tr: HTMLElement;
+        tr: HTMLTableRowElement;
         tbody: HTMLElement;
         table: tableEditor;
         /**
@@ -15,10 +15,11 @@ declare namespace uikit.table_editor {
         */
         private editorActiontd;
         private divs;
+        dropFlag: boolean;
         /**
          * @param tr 进行数据编辑操作的行对象
         */
-        constructor(tr: HTMLElement, tbody: HTMLElement, table: tableEditor);
+        constructor(tr: HTMLTableRowElement, tbody: HTMLElement, table: tableEditor);
         getElementById(id: string): HTMLElement;
         /**
          * 将符合id条件的html元素显示出来
@@ -59,25 +60,55 @@ declare namespace uikit.table_editor {
     }
 }
 declare namespace uikit.table_editor {
+    interface editorConfig {
+        style?: string;
+        className?: string;
+        tdConfig?: columnConfig[];
+        warning?: Delegate.Action;
+        deleteRow?: Delegate.Sub;
+        showRowNumber: boolean;
+        allowsAddNew: boolean;
+        names?: buttonNames;
+    }
+    interface buttonNames {
+        remove: string;
+        edit: string;
+        OK: string;
+        cancel: string;
+        actions: string;
+    }
+    interface columnConfig {
+        width?: string;
+        lockEditor?: boolean;
+        title?: string;
+    }
+    function defaultButtonNames(): buttonNames;
+    function defaultConfig(): editorConfig;
+    function contains(opts: editorConfig, i: number): boolean;
+}
+declare namespace uikit.table_editor {
     class tableEditor {
-        private headers;
-        private rowNumbers;
+        headers: string[];
+        opts: editorConfig;
         private tbody;
-        private showRowNumber;
+        private rows;
+        /**
+         * 只可以同时编辑一行数据，会利用这个开关来锁住再编辑的时候添加新的行数据或者编辑其他的行数据
+        */
         edit_lock: boolean;
-        warningEditLock: () => void;
         /**
          * 这个构造函数将会创建一个新的table对象
          *
          * @param id id value of a ``<div>`` tag.
         */
-        constructor(headers: string[], id: string, style?: string, className?: string, tdWidth?: string[], warning?: () => void, showRowNumber?: boolean);
-        addNew(value?: {}): editor;
+        constructor(id: string, headers: string[], opts?: editorConfig);
+        addNew(value?: {}, hideInputs?: boolean): editor;
         private addNewInternal;
         /**
          * 将目标表格中的文本读取出来以进行后续的操作
         */
         TableData<T extends {}>(keepsRowId?: boolean): T[];
+        TableRows(): editor[];
         private createObject;
     }
 }

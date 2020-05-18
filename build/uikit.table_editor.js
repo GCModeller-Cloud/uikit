@@ -1,16 +1,37 @@
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 /// <reference path="../../build/linq.d.ts" />
 var uikit;
 (function (uikit) {
     var table_editor;
     (function (table_editor) {
-        function fromData(data, divId) {
-            var headers = Object.keys(data[0]);
-            var editor = new table_editor.tableEditor(headers, divId);
+        function fromData(data, divId, filters, opts) {
+            if (opts === void 0) { opts = table_editor.defaultConfig(); }
+            var haveFilter = !isNullOrEmpty(filters);
+            var headers = haveFilter ? filters : Object.keys(data[0]);
+            var editor = new table_editor.tableEditor(divId, headers, opts);
+            var lock = opts.allowsAddNew;
+            var copy;
+            editor.opts.allowsAddNew = true;
             for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
                 var element = data_1[_i];
+                if (haveFilter) {
+                    copy = {};
+                    for (var _a = 0, filters_1 = filters; _a < filters_1.length; _a++) {
+                        var name_1 = filters_1[_a];
+                        copy[name_1] = element[name_1];
+                    }
+                    element = copy;
+                }
                 editor.edit_lock = false;
-                editor.addNew(element).confirmNew();
+                editor.addNew(element, true).confirmNew();
             }
+            editor.opts.allowsAddNew = lock;
             return editor;
         }
         table_editor.fromData = fromData;
@@ -31,8 +52,16 @@ var uikit;
                 this.tr = tr;
                 this.tbody = tbody;
                 this.table = table;
+                this.dropFlag = false;
                 var vm = this;
-                var td = $ts("<td>").display(table_editor.template.editor_template);
+                var names = table.opts.names;
+                var html = table_editor.template.editor_template
+                    .replace("{1}", names.OK)
+                    .replace("{2}", names.cancel)
+                    .replace("{3}", names.remove)
+                    .replace("{4}", names.edit)
+                    .replace("{5}", names.OK);
+                var td = $ts("<td>").display(html);
                 this.editorActiontd = td;
                 this.tr.appendChild(td);
                 this.divs = td.getElementsByTagName("div");
@@ -77,9 +106,13 @@ var uikit;
             */
             editor.prototype.hideInputs = function () {
                 var tdList = this.tr.getElementsByTagName("td");
+                var config = this.table.opts.tdConfig;
                 // 最后一个td是editor的td，没有输入框
                 // 所以在这里-1跳过最后一个td
                 for (var i = 0; i < tdList.length - 1; i++) {
+                    if ((!isNullOrEmpty(config)) && config.length > i && config[i].lockEditor) {
+                        continue;
+                    }
                     var td = tdList[i];
                     var textDisplay = td.getElementsByTagName("div")[0];
                     var inputBox = td.getElementsByTagName("input")[0];
@@ -95,9 +128,13 @@ var uikit;
             */
             editor.prototype.showInputs = function () {
                 var tdList = this.tr.getElementsByTagName("td");
+                var config = this.table.opts.tdConfig;
                 // 最后一个td是editor的td，没有输入框
                 // 所以在这里-1跳过最后一个td
                 for (var i = 0; i < tdList.length - 1; i++) {
+                    if ((!isNullOrEmpty(config)) && config.length > i && config[i].lockEditor) {
+                        continue;
+                    }
                     var td = tdList[i];
                     var textDisplay = td.getElementsByTagName("div")[0];
                     var inputBox = td.getElementsByTagName("input")[0];
@@ -128,7 +165,13 @@ var uikit;
              * 对当前的行数据进行删除
             */
             editor.prototype.removeCurrent = function () {
-                this.tr.remove();
+                // this.dropFlag = true;
+                if (isNullOrUndefined(this.table.opts.deleteRow)) {
+                    this.tr.remove();
+                }
+                else {
+                    this.table.opts.deleteRow(this.tr, this);
+                }
             };
             /**
              * 当前的行进入编辑模式
@@ -157,67 +200,101 @@ var uikit;
 (function (uikit) {
     var table_editor;
     (function (table_editor) {
+        function defaultButtonNames() {
+            return {
+                remove: "Remove",
+                edit: "Edit",
+                OK: "Okey",
+                cancel: "Cancel",
+                actions: "Actions"
+            };
+        }
+        table_editor.defaultButtonNames = defaultButtonNames;
+        function defaultConfig() {
+            return {
+                style: null,
+                className: "table",
+                tdConfig: null,
+                warning: DoNothing,
+                showRowNumber: false,
+                allowsAddNew: true,
+                names: defaultButtonNames()
+            };
+        }
+        table_editor.defaultConfig = defaultConfig;
+        function contains(opts, i) {
+            return (isNullOrUndefined(opts.tdConfig) || opts.tdConfig.length <= i);
+        }
+        table_editor.contains = contains;
+    })(table_editor = uikit.table_editor || (uikit.table_editor = {}));
+})(uikit || (uikit = {}));
+var uikit;
+(function (uikit) {
+    var table_editor;
+    (function (table_editor) {
         var tableEditor = /** @class */ (function () {
             /**
              * 这个构造函数将会创建一个新的table对象
              *
              * @param id id value of a ``<div>`` tag.
             */
-            function tableEditor(headers, id, style, className, tdWidth, warning, showRowNumber) {
-                if (style === void 0) { style = null; }
-                if (className === void 0) { className = null; }
-                if (tdWidth === void 0) { tdWidth = null; }
-                if (warning === void 0) { warning = null; }
-                if (showRowNumber === void 0) { showRowNumber = true; }
-                if (showRowNumber) {
-                    headers = ["NO."].concat(headers);
-                }
+            function tableEditor(id, headers, opts) {
+                if (opts === void 0) { opts = table_editor.defaultConfig(); }
                 this.headers = headers;
-                this.rowNumbers = 1;
-                this.warningEditLock = warning;
-                this.showRowNumber = showRowNumber;
+                this.opts = opts;
+                if (opts.showRowNumber) {
+                    this.headers = ["NO."].concat(headers);
+                }
+                this.rows = [];
                 var thead = $ts("<thead>");
                 var tbody = $ts("<tbody>");
                 var table = $ts("<table>").appendElement(thead).appendElement(tbody);
-                $ts(id).appendChild(table);
-                if (style) {
-                    table.setAttribute("style", style);
+                $ts(id).clear().appendElement(table);
+                if (!Strings.Empty(opts.style, true)) {
+                    table.setAttribute("style", opts.style);
                 }
-                if (className) {
-                    table.className = className;
+                if (!Strings.Empty(opts.className, true)) {
+                    table.className = opts.className;
                 }
                 var tr = $ts("<tr>");
                 var addHeader = function (header, i) {
                     var th = $ts("<th>").display(header);
+                    var config = table_editor.contains(opts, i) ? { lockEditor: false } : opts.tdConfig[i];
                     thead.appendChild(th);
-                    if (tdWidth) {
-                        th.setAttribute("style", tdWidth[i]);
+                    if (!Strings.Empty(config.width)) {
+                        th.setAttribute("style", config.width);
+                    }
+                    if (!Strings.Empty(config.title)) {
+                        th.display(config.title);
                     }
                 };
                 thead.appendChild(tr);
-                headers.forEach(addHeader);
+                headers.concat([opts.names.actions]).forEach(addHeader);
                 this.tbody = tbody;
             }
-            tableEditor.prototype.addNew = function (value) {
+            tableEditor.prototype.addNew = function (value, hideInputs) {
                 if (value === void 0) { value = null; }
-                if (this.edit_lock) {
-                    if (!this.warningEditLock) {
-                        this.warningEditLock();
+                if (hideInputs === void 0) { hideInputs = false; }
+                if (this.edit_lock || !this.opts.allowsAddNew) {
+                    if (!isNullOrUndefined(this.opts.warning)) {
+                        this.opts.warning();
                     }
                     return null;
                 }
                 else {
-                    return this.addNewInternal(value);
+                    var row = this.addNewInternal(value, hideInputs);
+                    this.rows.push(row);
+                    return row;
                 }
             };
-            tableEditor.prototype.addNewInternal = function (value) {
+            tableEditor.prototype.addNewInternal = function (value, hideInputs) {
                 // 根据header的数量来生成对应的列
                 var tr = $ts("<tr>");
-                var i = this.rowNumbers++;
-                var displayRowNumber = this.showRowNumber;
+                var i = this.rows.length + 1;
+                var displayRowNumber = this.opts.showRowNumber;
                 tr.id = "row-" + i;
                 for (var _i = 0, _a = this.headers; _i < _a.length; _i++) {
-                    var name_1 = _a[_i];
+                    var name_2 = _a[_i];
                     var td = $ts("<td>");
                     if (displayRowNumber) {
                         displayRowNumber = false;
@@ -227,17 +304,20 @@ var uikit;
                         var text = $ts("<div>", { id: "text" });
                         // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
                         var input = $ts("<input>", {
-                            id: "input-" + name_1,
+                            id: "input-" + name_2,
                             type: "text",
                             style: "width: 85%",
                             class: "form-control"
                         });
                         if (!isNullOrUndefined(value)) {
-                            text.display(value[name_1]);
-                            input.asInput.value = value[name_1];
+                            text.display(value[name_2]);
+                            input.asInput.value = value[name_2];
                         }
                         td.appendChild(input);
                         td.appendChild(text);
+                        if (hideInputs) {
+                            input.style.display = "none";
+                        }
                     }
                     tr.appendChild(td);
                 }
@@ -257,10 +337,13 @@ var uikit;
                 }
                 return table;
             };
+            tableEditor.prototype.TableRows = function () {
+                return __spreadArrays(this.rows);
+            };
             tableEditor.prototype.createObject = function (tr, keepsRowId) {
                 var tdList = tr.getElementsByTagName("td");
                 var row = {};
-                var isRowId = this.showRowNumber;
+                var isRowId = this.opts.showRowNumber;
                 for (var j = 0; j < tdList.length - 1; j++) {
                     var td = tdList[j];
                     var text = td.getElementsByTagName("div")[0];
@@ -293,7 +376,7 @@ var uikit;
             /**
              * 定义了如何生成表格之中的行数据进行编辑操作的按钮的html用户界面
             */
-            template.editor_template = "\n        <div id=\"row-new-pending\">\n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"confirm\">OK</a></span>&nbsp;\n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"cancel\">Cancel</a></span>\n        </div>\n        <div id=\"remove-button\" style=\"display:none;\">            \n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"remove\">Remove</a></span>            \n            <span class=\"label label-info\"><a href=\"" + executeJavaScript + "\" id=\"edit\">Edit</a></span>          \n        </div>\n        <div id=\"edit-button\" style=\"display:none;\">            \n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"ok\">OK</a></span>\n        </div>";
+            template.editor_template = "\n        <div id=\"row-new-pending\">\n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"confirm\">{1}</a></span>&nbsp;\n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"cancel\">{2}</a></span>\n        </div>\n        <div id=\"remove-button\" style=\"display:none;\">            \n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"remove\">{3}</a></span>            \n            <span class=\"label label-info\"><a href=\"" + executeJavaScript + "\" id=\"edit\">{4}</a></span>          \n        </div>\n        <div id=\"edit-button\" style=\"display:none;\">            \n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"ok\">{5}</a></span>\n        </div>";
         })(template = table_editor.template || (table_editor.template = {}));
     })(table_editor = uikit.table_editor || (uikit.table_editor = {}));
 })(uikit || (uikit = {}));

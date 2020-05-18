@@ -11,12 +11,21 @@
         private editorActiontd: HTMLElement;
         private divs: NodeListOf<HTMLDivElement>;
 
+        public dropFlag: boolean = false;
+
         /**
          * @param tr 进行数据编辑操作的行对象
         */
-        constructor(public tr: HTMLElement, public tbody: HTMLElement, public table: tableEditor) {
+        constructor(public tr: HTMLTableRowElement, public tbody: HTMLElement, public table: tableEditor) {
             let vm = this;
-            let td = $ts("<td>").display(template.editor_template);
+            let names = table.opts.names;
+            let html: string = template.editor_template
+                .replace("{1}", names.OK)
+                .replace("{2}", names.cancel)
+                .replace("{3}", names.remove)
+                .replace("{4}", names.edit)
+                .replace("{5}", names.OK);
+            let td = $ts("<td>").display(html);
 
             this.editorActiontd = td;
             this.tr.appendChild(td);
@@ -31,7 +40,7 @@
         }
 
         public getElementById(id: string): HTMLElement {
-            var id_lower = id.toLowerCase();
+            let id_lower = id.toLowerCase();
 
             for (var i = 0; i < this.divs.length; i++) {
                 var div: HTMLElement = this.divs[i];
@@ -72,14 +81,19 @@
          * 将表格内容的输入框隐藏掉
         */
         public hideInputs() {
-            var tdList = this.tr.getElementsByTagName("td");
+            let tdList = this.tr.getElementsByTagName("td");
+            let config = this.table.opts.tdConfig;
 
             // 最后一个td是editor的td，没有输入框
             // 所以在这里-1跳过最后一个td
             for (var i = 0; i < tdList.length - 1; i++) {
-                var td = tdList[i];
-                var textDisplay: HTMLElement = td.getElementsByTagName("div")[0];
-                var inputBox: HTMLInputElement = td.getElementsByTagName("input")[0];
+                if ((!isNullOrEmpty(config)) && config.length > i && config[i].lockEditor) {
+                    continue;
+                }
+
+                let td = tdList[i];
+                let textDisplay: HTMLElement = td.getElementsByTagName("div")[0];
+                let inputBox: HTMLInputElement = td.getElementsByTagName("input")[0];
 
                 if (textDisplay && inputBox) {
                     textDisplay.innerText = inputBox.value;
@@ -94,11 +108,16 @@
          * 点击编辑按钮之后显示表格的单元格内容编辑的输入框
         */
         public showInputs() {
-            var tdList = this.tr.getElementsByTagName("td");
+            let tdList = this.tr.getElementsByTagName("td");
+            let config = this.table.opts.tdConfig;
 
             // 最后一个td是editor的td，没有输入框
             // 所以在这里-1跳过最后一个td
-            for (var i = 0; i < tdList.length - 1; i++) {
+            for (let i = 0; i < tdList.length - 1; i++) {
+                if ((!isNullOrEmpty(config)) && config.length > i && config[i].lockEditor) {
+                    continue;
+                }
+
                 var td = tdList[i];
                 var textDisplay: HTMLElement = td.getElementsByTagName("div")[0];
                 var inputBox: HTMLInputElement = td.getElementsByTagName("input")[0];
@@ -134,7 +153,13 @@
          * 对当前的行数据进行删除
         */
         public removeCurrent() {
-            this.tr.remove();
+            // this.dropFlag = true;
+
+            if (isNullOrUndefined(this.table.opts.deleteRow)) {
+                this.tr.remove();
+            } else {
+                this.table.opts.deleteRow(this.tr, this);
+            }
         }
 
         /**
