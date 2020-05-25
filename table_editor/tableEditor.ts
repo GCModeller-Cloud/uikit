@@ -51,7 +51,16 @@
             }
 
             thead.appendChild(tr);
-            headers.concat([opts.names.actions]).forEach(addHeader);
+
+            let names = headers;
+
+            if (isNullOrUndefined(opts.names) || Strings.Empty(opts.names.actions, true)) {
+                names = names.concat(["actions"]);
+            } else {
+                names = headers.concat([opts.names.actions]);
+            }
+
+            names.forEach(addHeader);
 
             this.tbody = tbody;
         }
@@ -72,11 +81,11 @@
 
         private addNewInternal(value: {}, hideInputs: boolean): editor {
             // 根据header的数量来生成对应的列
-            let tr = $ts("<tr>");
             let i = this.rows.length + 1;
             let displayRowNumber: boolean = this.opts.showRowNumber;
-
-            tr.id = `row-${i}`;
+            let tr: HTMLTableRowElement = <any>$ts("<tr>", {
+                id: `row-${i}`
+            });
 
             for (let name of this.headers) {
                 let td = $ts("<td>");

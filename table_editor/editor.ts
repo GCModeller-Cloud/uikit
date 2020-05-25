@@ -18,7 +18,7 @@
         */
         constructor(public tr: HTMLTableRowElement, public tbody: HTMLElement, public table: tableEditor) {
             let vm = this;
-            let names = table.opts.names;
+            let names = table.opts.names || defaultButtonNames();
             let html: string = template.editor_template
                 .replace("{1}", names.OK)
                 .replace("{2}", names.cancel)

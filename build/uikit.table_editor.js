@@ -54,7 +54,7 @@ var uikit;
                 this.table = table;
                 this.dropFlag = false;
                 var vm = this;
-                var names = table.opts.names;
+                var names = table.opts.names || table_editor.defaultButtonNames();
                 var html = table_editor.template.editor_template
                     .replace("{1}", names.OK)
                     .replace("{2}", names.cancel)
@@ -269,7 +269,14 @@ var uikit;
                     }
                 };
                 thead.appendChild(tr);
-                headers.concat([opts.names.actions]).forEach(addHeader);
+                var names = headers;
+                if (isNullOrUndefined(opts.names) || Strings.Empty(opts.names.actions, true)) {
+                    names = names.concat(["actions"]);
+                }
+                else {
+                    names = headers.concat([opts.names.actions]);
+                }
+                names.forEach(addHeader);
                 this.tbody = tbody;
             }
             tableEditor.prototype.addNew = function (value, hideInputs) {
@@ -289,10 +296,11 @@ var uikit;
             };
             tableEditor.prototype.addNewInternal = function (value, hideInputs) {
                 // 根据header的数量来生成对应的列
-                var tr = $ts("<tr>");
                 var i = this.rows.length + 1;
                 var displayRowNumber = this.opts.showRowNumber;
-                tr.id = "row-" + i;
+                var tr = $ts("<tr>", {
+                    id: "row-" + i
+                });
                 for (var _i = 0, _a = this.headers; _i < _a.length; _i++) {
                     var name_2 = _a[_i];
                     var td = $ts("<td>");
