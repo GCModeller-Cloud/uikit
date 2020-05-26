@@ -117,7 +117,13 @@ var uikit;
                     var textDisplay = td.getElementsByTagName("div")[0];
                     var inputBox = td.getElementsByTagName("input")[0];
                     if (textDisplay && inputBox) {
-                        textDisplay.innerText = inputBox.value;
+                        // 在这里进行编辑后的结果值的更新
+                        if (!isNullOrUndefined(config[i].asUrl)) {
+                            textDisplay.innerHTML = config[i].asUrl(inputBox.value);
+                        }
+                        else {
+                            textDisplay.innerText = inputBox.value;
+                        }
                         textDisplay.style.display = "block";
                         inputBox.style.display = "none";
                     }

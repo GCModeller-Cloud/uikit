@@ -86,17 +86,23 @@
 
             // 最后一个td是editor的td，没有输入框
             // 所以在这里-1跳过最后一个td
-            for (var i = 0; i < tdList.length - 1; i++) {
+            for (let i = 0; i < tdList.length - 1; i++) {
                 if ((!isNullOrEmpty(config)) && config.length > i && config[i].lockEditor) {
                     continue;
                 }
 
-                let td = tdList[i];
+                let td: HTMLTableDataCellElement = tdList[i];
                 let textDisplay: HTMLElement = td.getElementsByTagName("div")[0];
                 let inputBox: HTMLInputElement = td.getElementsByTagName("input")[0];
 
                 if (textDisplay && inputBox) {
-                    textDisplay.innerText = inputBox.value;
+                    // 在这里进行编辑后的结果值的更新
+                    if (!isNullOrUndefined(config[i].asUrl)) {
+                        textDisplay.innerHTML = config[i].asUrl(inputBox.value);
+                    } else {
+                        textDisplay.innerText = inputBox.value;
+                    }
+
                     textDisplay.style.display = "block";
 
                     inputBox.style.display = "none";

@@ -81,6 +81,7 @@ declare namespace uikit.table_editor {
         width?: string;
         lockEditor?: boolean;
         title?: string;
+        asUrl?: Delegate.Func<string>;
     }
     function defaultButtonNames(): buttonNames;
     function defaultConfig(): editorConfig;
