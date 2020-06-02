@@ -280,12 +280,12 @@ var uikit;
                 div.append($ts("<div>", { id: "colorhexDIV" }));
                 div.append($ts("<div>", { id: "colorrgbDIV" }));
                 div.append($ts("<div>", { id: "colorhslDIV" }));
-                div.append($ts("<button>", {
-                    id: "colorBtn",
-                    onclick: function () {
-                        div.hide();
-                    }
-                }).display("关闭"));
+                //div.append($ts("<button>", {
+                //    id: "colorBtn",
+                //    onclick: function () {
+                //        div.hide();
+                //    }
+                //}).display("关闭"))
                 div.append($ts("<div>", { id: "brightness" }));
                 this.div.append(div);
             };
@@ -340,7 +340,7 @@ var uikit;
                     onclick: function () {
                         // ������ʾ���ȵ�������
                         $ts("#lumtopcontainer").show();
-                        $ts("#colorBtn").show();
+                        // $ts("#colorBtn").show();
                         evt.clickColor(pdata.color, pdata.offsets[0], pdata.offsets[1]);
                     },
                     onmouseover: function () {

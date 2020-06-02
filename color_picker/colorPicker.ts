@@ -33,17 +33,15 @@
             div.append($ts("<div>", { id: "colorhexDIV" }));
             div.append($ts("<div>", { id: "colorrgbDIV" }));
             div.append($ts("<div>", { id: "colorhslDIV" }));
-            div.append($ts("<button>", {
-                id: "colorBtn",
-                onclick: function () {
-                    div.hide();
-                }
+            //div.append($ts("<button>", {
+            //    id: "colorBtn",
+            //    onclick: function () {
+            //        div.hide();
+            //    }
 
-            }).display("关闭"))
+            //}).display("关闭"))
 
-            div.append($ts("<div>", { id: "brightness" }));
-
-            
+            div.append($ts("<div>", { id: "brightness" }));                    
 
             this.div.append(div);
         }

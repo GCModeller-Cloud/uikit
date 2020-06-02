@@ -33,7 +33,7 @@ namespace uikit.color_picker.view {
                 onclick: function () {
                     // 重新显示亮度调整界面
                     $ts("#lumtopcontainer").show();
-                    $ts("#colorBtn").show();
+                    // $ts("#colorBtn").show();
                     evt.clickColor(pdata.color, pdata.offsets[0], pdata.offsets[1]);
                 },
                 onmouseover: function () {
