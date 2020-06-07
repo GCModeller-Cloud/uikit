@@ -1,5 +1,8 @@
 /// <reference path="../../build/linq.d.ts" />
 declare namespace uikit.table_editor {
+    /**
+     * @param filters the object field names
+    */
     function fromData<T extends {}>(data: T[], divId: string, filters?: string[], opts?: editorConfig): tableEditor;
 }
 declare namespace uikit.table_editor {
@@ -32,7 +35,7 @@ declare namespace uikit.table_editor {
         /**
          * 将表格内容的输入框隐藏掉
         */
-        hideInputs(): void;
+        hideInputs(confirm?: boolean): void;
         /**
          * 点击编辑按钮之后显示表格的单元格内容编辑的输入框
         */
@@ -56,19 +59,21 @@ declare namespace uikit.table_editor {
         /**
          * 确认对当前的行数据的编辑操作，并退出编辑模式
         */
-        confirmEdit(): void;
+        confirmEdit(confirm?: boolean): void;
     }
 }
 declare namespace uikit.table_editor {
     interface editorConfig {
         style?: string;
         className?: string;
+        table_id?: string;
         tdConfig?: columnConfig[];
         warning?: Delegate.Action;
         deleteRow?: Delegate.Sub;
         showRowNumber: boolean;
         allowsAddNew: boolean;
         names?: buttonNames;
+        clearContainer?: boolean;
     }
     interface buttonNames {
         remove: string;
@@ -97,10 +102,13 @@ declare namespace uikit.table_editor {
          * 只可以同时编辑一行数据，会利用这个开关来锁住再编辑的时候添加新的行数据或者编辑其他的行数据
         */
         edit_lock: boolean;
+        table: HTMLTableElement;
+        fieldHeaders: string[];
         /**
          * 这个构造函数将会创建一个新的table对象
          *
          * @param id id value of a ``<div>`` tag.
+         * @param headers the object field names.
         */
         constructor(id: string, headers: string[], opts?: editorConfig);
         addNew(value?: {}, hideInputs?: boolean): editor;

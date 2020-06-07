@@ -10,23 +10,38 @@
         */
         public edit_lock: boolean;
 
+        public table: HTMLTableElement;
+        public fieldHeaders: string[];
+
         /**
          * 这个构造函数将会创建一个新的table对象
          * 
          * @param id id value of a ``<div>`` tag. 
+         * @param headers the object field names.
         */
         constructor(id: string, public headers: string[], public opts: editorConfig = defaultConfig()) {
             if (opts.showRowNumber) {
                 this.headers = ["NO."].concat(headers);
+                this.fieldHeaders = [null].concat(headers);
+            } else {
+                this.fieldHeaders = [...headers];
             }
 
             this.rows = [];
 
             let thead = $ts("<thead>");
             let tbody = $ts("<tbody>");
-            let table = $ts("<table>").appendElement(thead).appendElement(tbody);
+            let table = $ts("<table>", {
+                id: Strings.Empty(opts.table_id, true) ? `${id.replace(/[#]+/g, "")}-table` : opts.table_id,
+                class: ["table"]
+            }).appendElement(thead)
+                .appendElement(tbody);
 
-            $ts(id).clear().appendElement(table);
+            if (!isNullOrUndefined(opts.clearContainer) && opts.clearContainer) {
+                $ts(id).clear().appendElement(table);
+            } else {
+                $ts(id).appendElement(table);
+            }
 
             if (!Strings.Empty(opts.style, true)) {
                 table.setAttribute("style", opts.style);
@@ -48,6 +63,8 @@
                 if (!Strings.Empty(config.title)) {
                     th.display(config.title);
                 }
+
+                return th;
             }
 
             thead.appendChild(tr);
@@ -60,8 +77,15 @@
                 names = headers.concat([opts.names.actions]);
             }
 
-            names.forEach(addHeader);
+            for (let i = 0; i < names.length; i++) {
+                let th = addHeader(names[i], i);
 
+                if (i == names.length - 1) {
+                    th.style.minWidth = "155px";
+                }
+            }
+
+            this.table = <any>table;
             this.tbody = tbody;
         }
 
@@ -97,10 +121,9 @@
                     let text = $ts("<div>", { id: "text" });
                     // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
                     let input = $ts("<input>", {
-                        id: `input-${name}`,
                         type: "text",
                         style: "width: 85%",
-                        class: "form-control"
+                        class: ["form-control", `input-${name}`]
                     });
 
                     if (!isNullOrUndefined(value)) {

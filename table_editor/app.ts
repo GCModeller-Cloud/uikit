@@ -2,6 +2,9 @@
 
 namespace uikit.table_editor {
 
+    /**
+     * @param filters the object field names
+    */
     export function fromData<T extends {}>(data: T[], divId: string, filters?: string[], opts: editorConfig = defaultConfig()): tableEditor {
         let haveFilter: boolean = !isNullOrEmpty(filters);
         let headers = haveFilter ? filters : Object.keys(data[0]);

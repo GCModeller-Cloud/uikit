@@ -14,5 +14,6 @@
         </div>
         <div id="edit-button" style="display:none;">            
             <span class="label label-success"><a href="${executeJavaScript}" id="ok">{5}</a></span>
+            <span class="label label-warning"><a href="${executeJavaScript}" id="cancel-edit">{2}</a></span>
         </div>`;
 }

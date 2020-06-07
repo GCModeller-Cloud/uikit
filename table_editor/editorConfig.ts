@@ -3,12 +3,14 @@ namespace uikit.table_editor {
     export interface editorConfig {
         style?: string;
         className?: string;
+        table_id?: string;
         tdConfig?: columnConfig[];
         warning?: Delegate.Action;
         deleteRow?: Delegate.Sub;
         showRowNumber: boolean;
         allowsAddNew: boolean;
         names?: buttonNames;
+        clearContainer?: boolean;
     }
 
     export interface buttonNames {
@@ -23,7 +25,7 @@ namespace uikit.table_editor {
         width?: string;
         lockEditor?: boolean;
         title?: string;
-        asUrl?: Delegate.Func<string>; 
+        asUrl?: Delegate.Func<string>;
     }
 
     export function defaultButtonNames(): buttonNames {
@@ -44,7 +46,8 @@ namespace uikit.table_editor {
             warning: DoNothing,
             showRowNumber: false,
             allowsAddNew: true,
-            names: defaultButtonNames()
+            names: defaultButtonNames(),
+            clearContainer: true
         }
     }
 

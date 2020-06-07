@@ -10,6 +10,9 @@ var uikit;
 (function (uikit) {
     var table_editor;
     (function (table_editor) {
+        /**
+         * @param filters the object field names
+        */
         function fromData(data, divId, filters, opts) {
             if (opts === void 0) { opts = table_editor.defaultConfig(); }
             var haveFilter = !isNullOrEmpty(filters);
@@ -57,7 +60,7 @@ var uikit;
                 var names = table.opts.names || table_editor.defaultButtonNames();
                 var html = table_editor.template.editor_template
                     .replace("{1}", names.OK)
-                    .replace("{2}", names.cancel)
+                    .replace(/\{2\}/g, names.cancel)
                     .replace("{3}", names.remove)
                     .replace("{4}", names.edit)
                     .replace("{5}", names.OK);
@@ -71,6 +74,7 @@ var uikit;
                 this.getElementById("remove").onclick = function () { vm.removeCurrent(); };
                 this.getElementById("edit").onclick = function () { vm.editThis(); };
                 this.getElementById("ok").onclick = function () { vm.confirmEdit(); };
+                this.getElementById("cancel-edit").onclick = function () { vm.confirmEdit(false); };
             }
             editor.prototype.getElementById = function (id) {
                 var id_lower = id.toLowerCase();
@@ -104,7 +108,8 @@ var uikit;
             /**
              * 将表格内容的输入框隐藏掉
             */
-            editor.prototype.hideInputs = function () {
+            editor.prototype.hideInputs = function (confirm) {
+                if (confirm === void 0) { confirm = true; }
                 var tdList = this.tr.getElementsByTagName("td");
                 var config = this.table.opts.tdConfig;
                 // 最后一个td是editor的td，没有输入框
@@ -117,12 +122,14 @@ var uikit;
                     var textDisplay = td.getElementsByTagName("div")[0];
                     var inputBox = td.getElementsByTagName("input")[0];
                     if (textDisplay && inputBox) {
-                        // 在这里进行编辑后的结果值的更新
-                        if (!isNullOrUndefined(config[i].asUrl)) {
-                            textDisplay.innerHTML = config[i].asUrl(inputBox.value);
-                        }
-                        else {
-                            textDisplay.innerText = inputBox.value;
+                        if (confirm) {
+                            // 在这里进行编辑后的结果值的更新
+                            if (!isNullOrUndefined(config[i].asUrl)) {
+                                textDisplay.innerHTML = config[i].asUrl(inputBox.value);
+                            }
+                            else {
+                                textDisplay.innerText = inputBox.value;
+                            }
                         }
                         textDisplay.style.display = "block";
                         inputBox.style.display = "none";
@@ -191,8 +198,9 @@ var uikit;
             /**
              * 确认对当前的行数据的编辑操作，并退出编辑模式
             */
-            editor.prototype.confirmEdit = function () {
-                this.hideInputs();
+            editor.prototype.confirmEdit = function (confirm) {
+                if (confirm === void 0) { confirm = true; }
+                this.hideInputs(confirm);
                 this.show("remove-button");
                 this.hide("edit-button");
                 this.table.edit_lock = false;
@@ -224,7 +232,8 @@ var uikit;
                 warning: DoNothing,
                 showRowNumber: false,
                 allowsAddNew: true,
-                names: defaultButtonNames()
+                names: defaultButtonNames(),
+                clearContainer: true
             };
         }
         table_editor.defaultConfig = defaultConfig;
@@ -243,6 +252,7 @@ var uikit;
              * 这个构造函数将会创建一个新的table对象
              *
              * @param id id value of a ``<div>`` tag.
+             * @param headers the object field names.
             */
             function tableEditor(id, headers, opts) {
                 if (opts === void 0) { opts = table_editor.defaultConfig(); }
@@ -250,12 +260,25 @@ var uikit;
                 this.opts = opts;
                 if (opts.showRowNumber) {
                     this.headers = ["NO."].concat(headers);
+                    this.fieldHeaders = [null].concat(headers);
+                }
+                else {
+                    this.fieldHeaders = __spreadArrays(headers);
                 }
                 this.rows = [];
                 var thead = $ts("<thead>");
                 var tbody = $ts("<tbody>");
-                var table = $ts("<table>").appendElement(thead).appendElement(tbody);
-                $ts(id).clear().appendElement(table);
+                var table = $ts("<table>", {
+                    id: Strings.Empty(opts.table_id, true) ? id.replace(/[#]+/g, "") + "-table" : opts.table_id,
+                    class: ["table"]
+                }).appendElement(thead)
+                    .appendElement(tbody);
+                if (!isNullOrUndefined(opts.clearContainer) && opts.clearContainer) {
+                    $ts(id).clear().appendElement(table);
+                }
+                else {
+                    $ts(id).appendElement(table);
+                }
                 if (!Strings.Empty(opts.style, true)) {
                     table.setAttribute("style", opts.style);
                 }
@@ -273,6 +296,7 @@ var uikit;
                     if (!Strings.Empty(config.title)) {
                         th.display(config.title);
                     }
+                    return th;
                 };
                 thead.appendChild(tr);
                 var names = headers;
@@ -282,7 +306,13 @@ var uikit;
                 else {
                     names = headers.concat([opts.names.actions]);
                 }
-                names.forEach(addHeader);
+                for (var i = 0; i < names.length; i++) {
+                    var th = addHeader(names[i], i);
+                    if (i == names.length - 1) {
+                        th.style.minWidth = "155px";
+                    }
+                }
+                this.table = table;
                 this.tbody = tbody;
             }
             tableEditor.prototype.addNew = function (value, hideInputs) {
@@ -318,10 +348,9 @@ var uikit;
                         var text = $ts("<div>", { id: "text" });
                         // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
                         var input = $ts("<input>", {
-                            id: "input-" + name_2,
                             type: "text",
                             style: "width: 85%",
-                            class: "form-control"
+                            class: ["form-control", "input-" + name_2]
                         });
                         if (!isNullOrUndefined(value)) {
                             text.display(value[name_2]);
@@ -390,7 +419,7 @@ var uikit;
             /**
              * 定义了如何生成表格之中的行数据进行编辑操作的按钮的html用户界面
             */
-            template.editor_template = "\n        <div id=\"row-new-pending\">\n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"confirm\">{1}</a></span>&nbsp;\n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"cancel\">{2}</a></span>\n        </div>\n        <div id=\"remove-button\" style=\"display:none;\">            \n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"remove\">{3}</a></span>            \n            <span class=\"label label-info\"><a href=\"" + executeJavaScript + "\" id=\"edit\">{4}</a></span>          \n        </div>\n        <div id=\"edit-button\" style=\"display:none;\">            \n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"ok\">{5}</a></span>\n        </div>";
+            template.editor_template = "\n        <div id=\"row-new-pending\">\n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"confirm\">{1}</a></span>&nbsp;\n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"cancel\">{2}</a></span>\n        </div>\n        <div id=\"remove-button\" style=\"display:none;\">            \n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"remove\">{3}</a></span>            \n            <span class=\"label label-info\"><a href=\"" + executeJavaScript + "\" id=\"edit\">{4}</a></span>          \n        </div>\n        <div id=\"edit-button\" style=\"display:none;\">            \n            <span class=\"label label-success\"><a href=\"" + executeJavaScript + "\" id=\"ok\">{5}</a></span>\n            <span class=\"label label-warning\"><a href=\"" + executeJavaScript + "\" id=\"cancel-edit\">{2}</a></span>\n        </div>";
         })(template = table_editor.template || (table_editor.template = {}));
     })(table_editor = uikit.table_editor || (uikit.table_editor = {}));
 })(uikit || (uikit = {}));

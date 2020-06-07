@@ -21,7 +21,7 @@
             let names = table.opts.names || defaultButtonNames();
             let html: string = template.editor_template
                 .replace("{1}", names.OK)
-                .replace("{2}", names.cancel)
+                .replace(/\{2\}/g, names.cancel)
                 .replace("{3}", names.remove)
                 .replace("{4}", names.edit)
                 .replace("{5}", names.OK);
@@ -37,6 +37,7 @@
             this.getElementById("remove").onclick = function () { vm.removeCurrent() };
             this.getElementById("edit").onclick = function () { vm.editThis() };
             this.getElementById("ok").onclick = function () { vm.confirmEdit() };
+            this.getElementById("cancel-edit").onclick = function () { vm.confirmEdit(false) };
         }
 
         public getElementById(id: string): HTMLElement {
@@ -80,7 +81,7 @@
         /**
          * 将表格内容的输入框隐藏掉
         */
-        public hideInputs() {
+        public hideInputs(confirm: boolean = true) {
             let tdList = this.tr.getElementsByTagName("td");
             let config = this.table.opts.tdConfig;
 
@@ -96,15 +97,16 @@
                 let inputBox: HTMLInputElement = td.getElementsByTagName("input")[0];
 
                 if (textDisplay && inputBox) {
-                    // 在这里进行编辑后的结果值的更新
-                    if (!isNullOrUndefined(config[i].asUrl)) {
-                        textDisplay.innerHTML = config[i].asUrl(inputBox.value);
-                    } else {
-                        textDisplay.innerText = inputBox.value;
+                    if (confirm) {
+                        // 在这里进行编辑后的结果值的更新
+                        if (!isNullOrUndefined(config[i].asUrl)) {
+                            textDisplay.innerHTML = config[i].asUrl(inputBox.value);
+                        } else {
+                            textDisplay.innerText = inputBox.value;
+                        }
                     }
 
                     textDisplay.style.display = "block";
-
                     inputBox.style.display = "none";
                 }
             }
@@ -181,8 +183,8 @@
         /**
          * 确认对当前的行数据的编辑操作，并退出编辑模式
         */
-        public confirmEdit() {
-            this.hideInputs();
+        public confirmEdit(confirm: boolean = true) {
+            this.hideInputs(confirm);
             this.show("remove-button");
             this.hide("edit-button");
             this.table.edit_lock = false;
