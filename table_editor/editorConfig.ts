@@ -24,6 +24,9 @@ namespace uikit.table_editor {
     export interface columnConfig {
         width?: string;
         lockEditor?: boolean;
+        /**
+         * the display title
+        */
         title?: string;
         asUrl?: Delegate.Func<string>;
     }

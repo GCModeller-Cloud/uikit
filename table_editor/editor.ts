@@ -13,6 +13,8 @@
 
         public dropFlag: boolean = false;
 
+        private _onremoves: Delegate.Sub;
+
         /**
          * @param tr 进行数据编辑操作的行对象
         */
@@ -44,16 +46,16 @@
             let id_lower = id.toLowerCase();
 
             for (var i = 0; i < this.divs.length; i++) {
-                var div: HTMLElement = this.divs[i];
+                let div: HTMLElement = this.divs[i];
 
                 if (div.id.toLowerCase() == id_lower) {
                     return div;
                 }
 
-                var abuttons = div.getElementsByTagName("a");
+                let abuttons = div.getElementsByTagName("a");
 
                 for (var j = 0; j < abuttons.length; j++) {
-                    var a: HTMLElement = abuttons[j];
+                    let a: HTMLElement = abuttons[j];
 
                     if (a.id.toLowerCase() == id_lower) {
                         return a;
@@ -95,14 +97,15 @@
                 let td: HTMLTableDataCellElement = tdList[i];
                 let textDisplay: HTMLElement = td.getElementsByTagName("div")[0];
                 let inputBox: HTMLInputElement = td.getElementsByTagName("input")[0];
+                let tdConfig = config[i];
 
                 if (textDisplay && inputBox) {
                     if (confirm) {
                         // 在这里进行编辑后的结果值的更新
-                        if (!isNullOrUndefined(config[i].asUrl)) {
-                            textDisplay.innerHTML = config[i].asUrl(inputBox.value);
-                        } else {
+                        if (isNullOrUndefined(tdConfig) || isNullOrUndefined(tdConfig.asUrl)) {
                             textDisplay.innerText = inputBox.value;
+                        } else {
+                            textDisplay.innerHTML = tdConfig.asUrl(inputBox.value);
                         }
                     }
 
@@ -157,16 +160,24 @@
             this.table.edit_lock = false;
         }
 
+        public onDelete(action: Delegate.Sub) {
+            this._onremoves = action;
+        }
+
         /**
          * 对当前的行数据进行删除
         */
         public removeCurrent() {
-            // this.dropFlag = true;
+            this.dropFlag = true;
 
             if (isNullOrUndefined(this.table.opts.deleteRow)) {
                 this.tr.remove();
             } else {
                 this.table.opts.deleteRow(this.tr, this);
+            }
+
+            if (!isNullOrUndefined(this._onremoves)) {
+                this._onremoves(this.tr);
             }
         }
 

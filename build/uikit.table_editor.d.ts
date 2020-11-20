@@ -19,6 +19,7 @@ declare namespace uikit.table_editor {
         private editorActiontd;
         private divs;
         dropFlag: boolean;
+        private _onremoves;
         /**
          * @param tr 进行数据编辑操作的行对象
         */
@@ -48,6 +49,7 @@ declare namespace uikit.table_editor {
          * 取消新增的行数据
         */
         cancelAddNew(): void;
+        onDelete(action: Delegate.Sub): void;
         /**
          * 对当前的行数据进行删除
         */
@@ -85,6 +87,9 @@ declare namespace uikit.table_editor {
     interface columnConfig {
         width?: string;
         lockEditor?: boolean;
+        /**
+         * the display title
+        */
         title?: string;
         asUrl?: Delegate.Func<string>;
     }
@@ -105,6 +110,10 @@ declare namespace uikit.table_editor {
         table: HTMLTableElement;
         fieldHeaders: string[];
         /**
+         * 获取当前表格的行数
+        */
+        get nrows(): number;
+        /**
          * 这个构造函数将会创建一个新的table对象
          *
          * @param id id value of a ``<div>`` tag.
@@ -113,6 +122,7 @@ declare namespace uikit.table_editor {
         constructor(id: string, headers: string[], opts?: editorConfig);
         addNew(value?: {}, hideInputs?: boolean): editor;
         private addNewInternal;
+        private propertyValue;
         /**
          * 将目标表格中的文本读取出来以进行后续的操作
         */

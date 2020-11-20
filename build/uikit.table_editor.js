@@ -121,14 +121,15 @@ var uikit;
                     var td = tdList[i];
                     var textDisplay = td.getElementsByTagName("div")[0];
                     var inputBox = td.getElementsByTagName("input")[0];
+                    var tdConfig = config[i];
                     if (textDisplay && inputBox) {
                         if (confirm) {
                             // 在这里进行编辑后的结果值的更新
-                            if (!isNullOrUndefined(config[i].asUrl)) {
-                                textDisplay.innerHTML = config[i].asUrl(inputBox.value);
+                            if (isNullOrUndefined(tdConfig) || isNullOrUndefined(tdConfig.asUrl)) {
+                                textDisplay.innerText = inputBox.value;
                             }
                             else {
-                                textDisplay.innerText = inputBox.value;
+                                textDisplay.innerHTML = tdConfig.asUrl(inputBox.value);
                             }
                         }
                         textDisplay.style.display = "block";
@@ -174,16 +175,22 @@ var uikit;
                 this.tr.remove();
                 this.table.edit_lock = false;
             };
+            editor.prototype.onDelete = function (action) {
+                this._onremoves = action;
+            };
             /**
              * 对当前的行数据进行删除
             */
             editor.prototype.removeCurrent = function () {
-                // this.dropFlag = true;
+                this.dropFlag = true;
                 if (isNullOrUndefined(this.table.opts.deleteRow)) {
                     this.tr.remove();
                 }
                 else {
                     this.table.opts.deleteRow(this.tr, this);
+                }
+                if (!isNullOrUndefined(this._onremoves)) {
+                    this._onremoves(this.tr);
                 }
             };
             /**
@@ -258,12 +265,18 @@ var uikit;
                 if (opts === void 0) { opts = table_editor.defaultConfig(); }
                 this.headers = headers;
                 this.opts = opts;
+                if (isNullOrUndefined(opts.showRowNumber)) {
+                    opts.showRowNumber = false;
+                }
                 if (opts.showRowNumber) {
                     this.headers = ["NO."].concat(headers);
                     this.fieldHeaders = [null].concat(headers);
                 }
                 else {
                     this.fieldHeaders = __spreadArrays(headers);
+                }
+                if (isNullOrUndefined(opts.allowsAddNew)) {
+                    TypeScript.logging.warning("editor config option [allowsAddNew] is missing, set to " + (opts.allowsAddNew = true) + " by default!");
                 }
                 this.rows = [];
                 var thead = $ts("<thead>");
@@ -315,6 +328,22 @@ var uikit;
                 this.table = table;
                 this.tbody = tbody;
             }
+            Object.defineProperty(tableEditor.prototype, "nrows", {
+                /**
+                 * 获取当前表格的行数
+                */
+                get: function () {
+                    var rows = this.tbody.getElementsByTagName("tr");
+                    if (isNullOrUndefined(rows)) {
+                        return 0;
+                    }
+                    else {
+                        return rows.length;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             tableEditor.prototype.addNew = function (value, hideInputs) {
                 if (value === void 0) { value = null; }
                 if (hideInputs === void 0) { hideInputs = false; }
@@ -337,36 +366,47 @@ var uikit;
                 var tr = $ts("<tr>", {
                     id: "row-" + i
                 });
+                var td;
+                var j = 0;
                 for (var _i = 0, _a = this.headers; _i < _a.length; _i++) {
                     var name_2 = _a[_i];
-                    var td = $ts("<td>");
                     if (displayRowNumber) {
                         displayRowNumber = false;
-                        td.innerText = i.toString();
+                        td = $ts("<td>").display(i.toString());
                     }
                     else {
-                        var text = $ts("<div>", { id: "text" });
-                        // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
-                        var input = $ts("<input>", {
-                            type: "text",
-                            style: "width: 85%",
-                            class: ["form-control", "input-" + name_2]
-                        });
-                        if (!isNullOrUndefined(value)) {
-                            text.display(value[name_2]);
-                            input.asInput.value = value[name_2];
-                        }
-                        td.appendChild(input);
-                        td.appendChild(text);
-                        if (hideInputs) {
-                            input.style.display = "none";
-                        }
+                        td = this.propertyValue(value, name_2, hideInputs, this.opts.tdConfig[j++]);
                     }
                     tr.appendChild(td);
                 }
                 this.tbody.appendChild(tr);
                 this.edit_lock = true;
                 return new table_editor.editor(tr, this.tbody, this);
+            };
+            tableEditor.prototype.propertyValue = function (value, name, hideInputs, config) {
+                var td = $ts("<td>");
+                var text = $ts("<div>", { id: "text", style: "display: " + (hideInputs ? "block" : "none") });
+                // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
+                var input = $ts("<input>", {
+                    type: "text",
+                    style: "width: 85%; display: " + (hideInputs ? "none" : "block"),
+                    class: ["form-control", "input-" + name]
+                });
+                if (!isNullOrUndefined(value)) {
+                    var textVal = value[name];
+                    if (isNullOrUndefined(textVal)) {
+                        textVal = "";
+                    }
+                    text.display(textVal);
+                    $input(input).value = textVal;
+                }
+                td.appendChild(input);
+                td.appendChild(text);
+                if ((!isNullOrUndefined(config)) && (!isNullOrUndefined(config.lockEditor)) && config.lockEditor) {
+                    input.hide();
+                    text.show();
+                }
+                return td;
             };
             /**
              * 将目标表格中的文本读取出来以进行后续的操作

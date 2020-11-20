@@ -14,17 +14,38 @@
         public fieldHeaders: string[];
 
         /**
+         * 获取当前表格的行数
+        */
+        public get nrows(): number {
+            let rows = this.tbody.getElementsByTagName("tr");
+
+            if (isNullOrUndefined(rows)) {
+                return 0;
+            } else {
+                return rows.length;
+            }
+        }
+
+        /**
          * 这个构造函数将会创建一个新的table对象
          * 
          * @param id id value of a ``<div>`` tag. 
          * @param headers the object field names.
         */
         constructor(id: string, public headers: string[], public opts: editorConfig = defaultConfig()) {
+            if (isNullOrUndefined(opts.showRowNumber)) {
+                opts.showRowNumber = false;
+            }
+
             if (opts.showRowNumber) {
                 this.headers = ["NO."].concat(headers);
                 this.fieldHeaders = [null].concat(headers);
             } else {
                 this.fieldHeaders = [...headers];
+            }
+
+            if (isNullOrUndefined(opts.allowsAddNew)) {
+                TypeScript.logging.warning(`editor config option [allowsAddNew] is missing, set to ${(opts.allowsAddNew = true)} by default!`);
             }
 
             this.rows = [];
@@ -110,33 +131,15 @@
             let tr: HTMLTableRowElement = <any>$ts("<tr>", {
                 id: `row-${i}`
             });
+            let td: HTMLElement;
+            let j: number = 0;
 
             for (let name of this.headers) {
-                let td = $ts("<td>");
-
                 if (displayRowNumber) {
                     displayRowNumber = false;
-                    td.innerText = i.toString();
+                    td = $ts("<td>").display(i.toString());
                 } else {
-                    let text = $ts("<div>", { id: "text" });
-                    // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
-                    let input = $ts("<input>", {
-                        type: "text",
-                        style: "width: 85%",
-                        class: ["form-control", `input-${name}`]
-                    });
-
-                    if (!isNullOrUndefined(value)) {
-                        text.display(value[name]);
-                        input.asInput.value = value[name];
-                    }
-
-                    td.appendChild(input);
-                    td.appendChild(text);
-
-                    if (hideInputs) {
-                        input.style.display = "none";
-                    }
+                    td = this.propertyValue(value, name, hideInputs, this.opts.tdConfig[j++]);
                 }
 
                 tr.appendChild(td);
@@ -146,6 +149,38 @@
             this.edit_lock = true;
 
             return new editor(tr, this.tbody, this);
+        }
+
+        private propertyValue(value: any, name: string, hideInputs: boolean, config: columnConfig): HTMLElement {
+            let td = $ts("<td>");
+            let text = $ts("<div>", { id: "text", style: `display: ${hideInputs ? "block" : "none"}` });
+            // <input id="input-symbol" type="text" style="width: 65%" class="form-control"></input>
+            let input = $ts("<input>", {
+                type: "text",
+                style: `width: 85%; display: ${hideInputs ? "none" : "block"}`,
+                class: ["form-control", `input-${name}`]
+            });
+
+            if (!isNullOrUndefined(value)) {
+                let textVal: string = value[name];
+
+                if (isNullOrUndefined(textVal)) {
+                    textVal = "";
+                }
+
+                text.display(textVal);
+                $input(input).value = textVal;
+            }
+
+            td.appendChild(input);
+            td.appendChild(text);
+
+            if ((!isNullOrUndefined(config)) && (!isNullOrUndefined(config.lockEditor)) && config.lockEditor) {
+                input.hide();
+                text.show();
+            }
+
+            return td;
         }
 
         /**
