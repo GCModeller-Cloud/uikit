@@ -14,6 +14,13 @@
         public fieldHeaders: string[];
 
         /**
+         * 行号(如果第一列是唯一的数字id，则可以调用这个属性来获取最后一行的id作为id递增计算的基础)
+        */
+        public get keyIndex(): number {
+            return $from(this.rows).Select(r => parseInt(r.tr.cells.item(0).innerText)).Max();
+        };
+
+        /**
          * 获取当前表格的行数
         */
         public get nrows(): number {

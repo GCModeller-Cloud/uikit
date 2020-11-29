@@ -110,6 +110,10 @@ declare namespace uikit.table_editor {
         table: HTMLTableElement;
         fieldHeaders: string[];
         /**
+         * 行号(如果第一列是唯一的数字id，则可以调用这个属性来获取最后一行的id作为id递增计算的基础)
+        */
+        get keyIndex(): number;
+        /**
          * 获取当前表格的行数
         */
         get nrows(): number;

@@ -328,6 +328,17 @@ var uikit;
                 this.table = table;
                 this.tbody = tbody;
             }
+            Object.defineProperty(tableEditor.prototype, "keyIndex", {
+                /**
+                 * 行号(如果第一列是唯一的数字id，则可以调用这个属性来获取最后一行的id作为id递增计算的基础)
+                */
+                get: function () {
+                    return $from(this.rows).Select(function (r) { return parseInt(r.tr.cells.item(0).innerText); }).Max();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ;
             Object.defineProperty(tableEditor.prototype, "nrows", {
                 /**
                  * 获取当前表格的行数
