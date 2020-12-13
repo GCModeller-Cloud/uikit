@@ -182,8 +182,8 @@ var uikit;
              * 对当前的行数据进行删除
             */
             editor.prototype.removeCurrent = function () {
-                this.dropFlag = true;
                 if (isNullOrUndefined(this.table.opts.deleteRow)) {
+                    this.dropFlag = true;
                     this.tr.remove();
                 }
                 else {

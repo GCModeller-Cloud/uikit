@@ -168,9 +168,8 @@
          * 对当前的行数据进行删除
         */
         public removeCurrent() {
-            this.dropFlag = true;
-
             if (isNullOrUndefined(this.table.opts.deleteRow)) {
+                this.dropFlag = true;
                 this.tr.remove();
             } else {
                 this.table.opts.deleteRow(this.tr, this);
