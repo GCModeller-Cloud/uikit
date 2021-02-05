@@ -1,0 +1,78 @@
+<script src="https://cdn.biodeep.cn/typescripts/build/linq.js?svn=20201213653989"></script>
+<script src="https://cdn.biodeep.cn/typescripts/uikit/build/uikit.suggestion_list.js"></script>
+
+<input type="text" id="input"></input>
+
+<div id="list"></div>
+
+
+
+<script>
+
+ function createSuggestions(
+        info,
+        listDiv,
+        inputDiv,
+        doclick,
+        newTermSpan) {
+
+        let newTerm = null;
+        let click = function (term) {
+            // $ts.value(valueSel, term.id.toString());
+            $ts(listDiv).hide();
+
+            doclick(term);
+
+            if (!Strings.Empty(newTermSpan, true)) {
+                $ts(newTermSpan).parentElement.style.display = "none";
+                $ts(newTermSpan).clear();
+            }
+        }
+        let terms = $from(info)
+            .Select(i => new uikit.suggestion_list.term(i.id, i.name))
+            .ToArray(false);
+
+        if (!Strings.Empty(newTermSpan, true)) {
+            newTerm = function (term) {
+                $ts(newTermSpan).display(term);
+                $ts(newTermSpan).parentElement.style.display = "block";
+            }
+            $ts(newTermSpan).parentElement.style.display = "none";
+        }
+
+        let suggest = uikit.suggestion_list.render.makeSuggestions(
+            terms, listDiv, click, 10, true, "", newTerm
+        );
+
+        // 这个应该是一个textbox的输入事件 
+        $ts(inputDiv).onkeyup = function () {
+            let search = $ts.value(inputDiv);
+
+            if (!search) {
+                $ts(listDiv).hide();
+            } else {
+                $ts(listDiv).show();
+                suggest($ts.value(inputDiv));
+            }
+        }
+    }
+
+
+ createSuggestions(
+        [
+        {id: "1", name: "Homo sapiens"},
+        {id: "1xxxxx", name: "human sapiens"},
+        {id: "2", name: "Environment Sample"},
+        {id: "3", name: "Rattus norvegicus"},
+        {id: "4", name: "Escherichia coli"},
+        {id: "5", name: "Mus musculus"},
+        {id: "6", name: "Danio rerio"},
+        {id: "7", name: "Arabidopsis thaliana "}
+        ],
+        "#list",
+        "#input",
+        function(text) {
+            alert(text)
+        }) ;
+
+</script>
